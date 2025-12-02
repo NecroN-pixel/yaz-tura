@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yazı Tura Oyunu (Web Sitesi) 👑 V 4.2 - YT Linki Eklendi</title>
+    <title>Yazı Tura Oyunu 👑 V 4.8 - Dikey İstatistikler</title>
     <style>
         /*
         * --- CSS DEĞİŞKENLERİ (TEMA VE RENKLER) ---
@@ -20,7 +20,7 @@
         }
 
         /*
-        * --- GENEL VE TEMEL STİLLER (MOBİL UYUMLU) ---
+        * --- GENEL VE TEMEL STİLLER ---
         */
         body {
             font-family: 'Poppins', sans-serif;
@@ -70,6 +70,35 @@
             position: relative;
         }
         
+        /* Mod Seçimi Stilleri */
+        .mode-selection {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background-color: var(--background-color);
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .mode-button {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mode-button.active {
+            background-color: var(--primary-color);
+            color: var(--card-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
         #current-time {
             color: #555;
             font-size: 1.1em;
@@ -162,6 +191,56 @@
             border-radius: 15px;
             border: 1px solid #dfe6e9;
         }
+        
+        /* Dikey Skor Çubukları için Yeni Stiller */
+        .score-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .score-line span {
+            /* Yazı/Tura skoru */
+            margin-left: 5px;
+        }
+
+        .score-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-bar {
+            width: 8px; /* Dikey çubuğun genişliği */
+            height: 30px; /* Maksimum yükseklik */
+            background-color: #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            transform: translateY(2px); /* Metinle hizalamak için */
+        }
+        
+        .score-bar-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%; /* Başlangıç değeri */
+            transition: height 0.5s ease-in-out;
+        }
+
+        #yazi-bar .score-bar-fill { background-color: var(--yazi-color); }
+        #tura-bar .score-bar-fill { background-color: var(--tura-color); }
+
+        .percentage-display {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-weight: 500;
+            width: 40px; /* Yüzdeleri hizalamak için sabit genişlik */
+            text-align: right;
+        }
 
         #yazi-score { color: var(--yazi-color); }
         #tura-score { color: var(--tura-color); }
@@ -200,7 +279,7 @@
             }
         }
 
-        /* Footer Stili (Linkler için esnek yapı) */
+        /* Footer Stili */
         .footer {
             position: fixed;
             bottom: 0;
@@ -215,7 +294,7 @@
             z-index: 11;
             display: flex;
             justify-content: center;
-            gap: 15px; /* Boşluk ekleme */
+            gap: 15px;
         }
         
         .footer a {
@@ -239,20 +318,41 @@
         <span id="current-time"></span> 
         
         <h1>Coin Flip Game 🎉</h1>
+
+        <div class="mode-selection">
+            <button id="mode-single" class="mode-button active" onclick="setMode('single')">Tek Atış 🎯</button>
+            <button id="mode-series" class="mode-button" onclick="setMode('series')">Seri Atış 📊</button>
+        </div>
+
         <div id="coin">?</div>
         
         <div id="result">Hadi Başlayalım!</div>
 
         <div class="controls">
             <button class="button-main" onclick="flipCoin()">Parayı At</button>
-            <button class="button-secondary" onclick="resetScore()">Skoru Sıfırla</button>
+            <button class="button-secondary" onclick="resetScore(true, true)">Skoru Sıfırla</button>
         </div>
         
         <div class="score-board">
             <h2>📊 Skor Durumu</h2>
-            <p>Yazı (✍️): <span id="yazi-score">0</span></p>
-            <p>Tura (👑): <span id="tura-score">0</span></p>
-            <p>Toplam Atış: <span id="total-score">0</span></p>
+            
+            <div class="score-line">
+                <div>Yazı (✍️): <span id="yazi-score">0</span></div>
+                <div class="score-bar-container">
+                    <div id="yazi-bar" class="score-bar"><div class="score-bar-fill"></div></div>
+                    <span id="yazi-percent" class="percentage-display">%0</span>
+                </div>
+            </div>
+
+            <div class="score-line">
+                <div>Tura (👑): <span id="tura-score">0</span></div>
+                <div class="score-bar-container">
+                    <div id="tura-bar" class="score-bar"><div class="score-bar-fill"></div></div>
+                    <span id="tura-percent" class="percentage-display">%0</span>
+                </div>
+            </div>
+
+            <p style="margin-top: 15px;">Toplam Atış: <span id="total-score">0</span></p>
         </div>
     </div>
 
@@ -263,17 +363,20 @@
 
     <script>
         // --- SÜRÜM NUMARASI ---
-        const GAME_VERSION = "V 4.2"; 
+        const GAME_VERSION = "V 4.8"; 
 
         // --- GLOBAL DEĞİŞKENLER ---
         let yaziCount = 0;
         let turaCount = 0;
         let totalCount = 0;
+        let gameMode = 'series'; 
 
         let originalPrimaryColor;
         let originalSecondaryColor;
         let yaziColor;
         let turaColor;
+
+        const STORAGE_KEY = 'coinFlipGameScore';
         
         // --- BAŞLATMA VE HATA ÇÖZÜMÜ ---
         function initializeColors() {
@@ -284,17 +387,80 @@
             turaColor = rootStyle.getPropertyValue('--tura-color').trim();
         }
 
+        // --- KALICI SKOR YÖNETİMİ ---
+        function loadScore() {
+            const storedScore = localStorage.getItem(STORAGE_KEY);
+            if (storedScore) {
+                const score = JSON.parse(storedScore);
+                yaziCount = score.yazi || 0;
+                turaCount = score.tura || 0;
+                totalCount = yaziCount + turaCount;
+            }
+        }
+
+        function saveScore() {
+            const scoreToStore = {
+                yazi: yaziCount,
+                tura: turaCount
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(scoreToStore));
+        }
+
+        // --- MOD YÖNETİMİ ---
+        function setMode(mode) {
+            gameMode = mode;
+            document.getElementById('mode-single').classList.remove('active');
+            document.getElementById('mode-series').classList.remove('active');
+            document.getElementById(`mode-${mode}`).classList.add('active');
+
+            if (mode === 'single') {
+                document.getElementById('result').textContent = "Tek atış modu aktif. İyi şanslar!";
+            } else {
+                document.getElementById('result').textContent = "Seri atış modu aktif. İstediğiniz kadar atın.";
+            }
+        }
+
         // --- SES YERİNE KONSOL UYARISI ---
         function playSound(soundType) {
              console.log(`[SES] ${soundType} sesi tetiklendi.`);
         }
         
-        // --- TEMA DEĞİŞTİRME ---
+        // --- TEMA VE STİL GÜNCELLEME ---
         function updateThemeColor(color) {
             document.documentElement.style.setProperty('--primary-color', color);
             document.querySelector('.container').style.borderColor = color;
         }
 
+        // --- YÜZDELİK DİKEY ÇUBUKLAR GÜNCELLEME (YENİ SİSTEM) ---
+        function updateVerticalBars() {
+            const yaziFill = document.querySelector('#yazi-bar .score-bar-fill');
+            const turaFill = document.querySelector('#tura-bar .score-bar-fill');
+            const yaziPercentDisplay = document.getElementById('yazi-percent');
+            const turaPercentDisplay = document.getElementById('tura-percent');
+
+            if (totalCount === 0) {
+                yaziFill.style.height = '0%';
+                turaFill.style.height = '0%';
+                yaziPercentDisplay.textContent = '%0';
+                turaPercentDisplay.textContent = '%0';
+                return;
+            }
+
+            // Kazanma oranına göre çubukların doluluk yüzdesi
+            const yaziPercentage = (yaziCount / totalCount) * 100;
+            const turaPercentage = (turaCount / totalCount) * 100;
+
+            // Dikey çubukların maksimum yüksekliği 30px (100%'e denk)
+            const yaziHeight = yaziPercentage; 
+            const turaHeight = turaPercentage;
+
+            yaziFill.style.height = `${yaziHeight}%`;
+            turaFill.style.height = `${turaHeight}%`;
+
+            yaziPercentDisplay.textContent = `%${Math.round(yaziPercentage)}`;
+            turaPercentDisplay.textContent = `%${Math.round(turaPercentage)}`;
+        }
+        
         // --- SAAT ---
         function updateTime() {
             const now = new Date();
@@ -309,6 +475,8 @@
             document.getElementById('yazi-score').textContent = yaziCount;
             document.getElementById('tura-score').textContent = turaCount;
             document.getElementById('total-score').textContent = totalCount;
+            saveScore();
+            updateVerticalBars(); // Dikey çubukları güncelle
         }
 
         // --- SAF CSS KONFETİ ---
@@ -352,6 +520,14 @@
             const buttonMain = document.querySelector('.button-main');
             const buttonSecondary = document.querySelector('.button-secondary');
             
+            // Tek Atış Modu Kontrolü
+            if (gameMode === 'single' && totalCount >= 1) {
+                 if (!confirm("Tek Atış modunda zaten bir sonuç var. Skoru sıfırlayıp yeniden başlamak ister misiniz?")) {
+                    return; 
+                 }
+                 resetScore(false, true); 
+            }
+
             updateThemeColor(originalPrimaryColor);
 
             resultDisplay.textContent = "Havada dönüyor...";
@@ -380,7 +556,7 @@
                 
                 updateThemeColor(finalResult.color);
                 
-                // Konfeti, Skor ve Ses Güncellemesi
+                // Skor Güncellemesi
                 if (finalResult.key === 'yazi') {
                     yaziCount++;
                     launchConfetti(yaziColor, originalPrimaryColor);
@@ -402,19 +578,26 @@
         }
         
         // --- SKOR SIFIRLAMA ---
-        function resetScore() {
-            if (confirm("Skor tablosunu sıfırlamak istediğinizden emin misiniz?")) {
-                yaziCount = 0;
-                turaCount = 0;
-                totalCount = 0;
-                updateScoreBoard();
-                
-                updateThemeColor(originalPrimaryColor);
-
-                document.getElementById('result').textContent = "Skorlar Sıfırlandı!";
-                document.getElementById('coin').textContent = "?"; 
-                document.getElementById('coin').style.backgroundColor = originalSecondaryColor;
+        function resetScore(askConfirmation = true, clearLocalStorage = false) {
+            if (askConfirmation && !confirm("Skor tablosunu sıfırlamak istediğinizden emin misiniz? Bu işlem kalıcı skoru da sıfırlayacaktır.")) {
+                return;
             }
+            
+            yaziCount = 0;
+            turaCount = 0;
+            totalCount = 0;
+            
+            updateScoreBoard();
+            
+            if (clearLocalStorage) {
+                 localStorage.removeItem(STORAGE_KEY);
+            }
+            
+            updateThemeColor(originalPrimaryColor);
+
+            document.getElementById('result').textContent = "Skorlar Sıfırlandı!";
+            document.getElementById('coin').textContent = "?"; 
+            document.getElementById('coin').style.backgroundColor = originalSecondaryColor;
         }
 
         // --- SAYFA YÜKLENİNCE BAŞLATMA (Garantili Başlangıç) ---
@@ -423,10 +606,16 @@
 
             initializeColors(); 
             
-            updateScoreBoard();
+            // Skorları sıfırla ve Local Storage'dan yükleme yapma (temiz başlangıç)
+            yaziCount = 0;
+            turaCount = 0;
+            totalCount = 0;
+            
+            updateScoreBoard(); 
             updateTime(); 
             setInterval(updateTime, 1000); 
             updateThemeColor(originalPrimaryColor);
+            setMode('series');
             
             document.getElementById('coin').textContent = "?";
             document.getElementById('coin').style.backgroundColor = originalSecondaryColor;
