@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimate Coin Flip 👑 V 3.000 - HIZ & ÖDÜL GÜNCELLEMESİ</title>
+    <title>Ultimate Coin Flip 👑 V 3.250 - Tam Sürüm</title>
     <meta name="description" content="Gelişmiş olasılık ve yazı tura simülasyonu.">
     <style>
         /* =========================================
@@ -131,7 +131,21 @@
         }
         
         .coin-message {
-             font-size: 0.9rem; color: var(--accent); font-weight: 600; margin-top: 10px;
+             font-size: 0.9rem; color: var(--text-main); font-weight: 600; margin-top: 10px;
+             /* ŞANS ETKİNLİĞİ için eklendi */
+             padding: 5px 10px; border-radius: 8px;
+        }
+        
+        /* ŞANS ETKİNLİĞİ MESAJI */
+        .coin-message[style*="background-color: var(--accent)"] {
+            background-color: var(--accent);
+            color: var(--card-bg) !important;
+            animation: pulse 1s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.9; }
+            to { transform: scale(1.03); opacity: 1; }
         }
 
         /* =========================================
@@ -354,7 +368,7 @@
 
     </div>
 
-    <div class="version-footer">V 3.000 - Hız & Ödül Güncellemesi | Hız Yükseltmesi ve Başarım Ödülleri</div>
+    <div class="version-footer">V 3.250 - Tam Çalışır Sürüm | Ağırlıklı ve Özel Modlar Aktif</div>
     <canvas id="confetti-canvas"></canvas>
 
     <div id="main-menu-modal" class="modal-backdrop" onclick="if(event.target===this) Game.ui.toggleMenu()">
@@ -414,14 +428,14 @@
         </div>
     </div>
 
-    <div id="custom-modal" class="modal-backdrop">
+    <div id="custom-modal" class="modal-backdrop" onclick="if(event.target===this) document.getElementById('custom-modal').classList.remove('open')">
         <div class="modal-content">
             <h2>✏️ Özelleştir</h2>
-            <p style="font-size:0.9rem; color:var(--text-muted)">Min 2, Maks 5 sonuç. Sadece 1 Emoji.</p>
+            <p style="font-size:0.9rem; color:var(--text-muted)">Min 2, Maks 5 sonuç. Sadece 1 Emoji. Her sonuç eşit ağırlıklı olur.</p>
             <div id="custom-inputs"></div>
             <button class="btn btn-secondary" style="width:100%; margin:10px 0;" onclick="Game.ui.addCustomInput()">+ Ekle</button>
             <div class="control-grid">
-                <button class="btn btn-primary" onclick="Game.logic.saveCustomMode()">Kaydet</button>
+                <button class="btn btn-primary" onclick="Game.logic.saveCustomMode()">Kaydet ve Başlat</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('custom-modal').classList.remove('open')">İptal</button>
             </div>
         </div>
@@ -430,14 +444,14 @@
     <div id="weighted-modal" class="modal-backdrop" onclick="if(event.target===this) document.getElementById('weighted-modal').classList.remove('open')">
         <div class="modal-content">
             <h2>⚖️ Ağırlıklı Olasılık Ayarı</h2>
-            <p style="font-size:0.9rem; color:var(--text-muted)">Her sonucun yüzdesini belirleyin. Toplam %100 olmalıdır.</p>
+            <p style="font-size:0.9rem; color:var(--text-muted)">Her sonucun yüzdesini belirleyin. Toplam %100 olmalıdır (Yazı/Tura için).</p>
             
             <div id="weighted-inputs"></div>
             <div style="font-weight: bold; margin-top: 10px;">Toplam: <span id="weighted-total">0%</span></div>
             <div id="weighted-error" style="color: var(--danger); font-size: 0.9rem; min-height: 1.5em;"></div>
 
             <div class="control-grid">
-                <button class="btn btn-primary" onclick="Game.logic.saveWeightedConfig()">Ayarları Kaydet</button>
+                <button class="btn btn-primary" onclick="Game.logic.saveWeightedConfig()">Ayarları Kaydet ve Başlat</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('weighted-modal').classList.remove('open')">İptal</button>
             </div>
         </div>
@@ -456,7 +470,7 @@
     <script>
         /**
          * ====================================================================
-         * GAME ENGINE V 3.000 - HIZ & ÖDÜL GÜNCELLEMESİ (Tamamen Düzeltildi)
+         * GAME ENGINE V 3.250 - TAM ÇALIŞIR SÜRÜM
          * ====================================================================
          */
         const Game = {
@@ -473,6 +487,7 @@
                 history: [],
                 unlockedAchievements: [],
                 weightedConfig: [], 
+                customOutcomes: [],
                 currency: 100, 
                 inventory: ['default'],
                 activeSkin: 'default',
@@ -480,7 +495,15 @@
                 flipBonus: 1, 
                 flipSpeedLevel: 1, 
                 flipDuration: 2,   
-                longTermStats: { totalCurrencyEarned: 0, totalFlipWins: 0, totalFlipLosses: 0, modePlays: {} }
+                luckyBonusLevel: 1, 
+                longTermStats: { 
+                    totalCurrencyEarned: 0, 
+                    totalFlipWins: 0, 
+                    totalFlipLosses: 0, 
+                    modePlays: {},
+                    luckyFlipsWon: 0,
+                    auto100Completed: false 
+                }
             },
             
             defaults: {
@@ -518,7 +541,8 @@
                     { id: 'cat10', name: 'Yemek', emoji: '🍔', color: '#2ecc71', count: 0, weight: 8.33 },
                     { id: 'cat11', name: 'Para', emoji: '💵', color: '#f1c40f', count: 0, weight: 8.33 },
                     { id: 'cat12', name: 'Şans', emoji: '🍀', color: '#38ada9', count: 0, weight: 8.33 }
-                ]
+                ],
+                CUSTOM: [] // Kullanıcı tarafından doldurulur
             },
 
             // Market Yükseltmeleri
@@ -546,6 +570,16 @@
                         const nextSpeed = Game.upgrades.flipSpeed.effect(level + 1);
                         return `Dönüş süresini ${level} seviyesinde ${Game.upgrades.flipSpeed.effect(level)} saniyeye düşürür. (Sonraki: ${nextSpeed || 'MAX'}s)`;
                     }
+                },
+                
+                luckyBonus: {
+                    name: "🍀 Şans Etkinliği Jetonu",
+                    icon: "🌟",
+                    baseCost: 200,
+                    costMultiplier: 1.8,
+                    maxLevel: 10,
+                    effect: (level) => 10 + (level * 10 * level), 
+                    desc: (level) => `Şans Etkinliği (Lucky Flip) ile kazanılan ekstra jeton miktarını artırır. Mevcut Ekstra: 💰 ${Game.upgrades.luckyBonus.effect(level)}`
                 }
             },
 
@@ -559,7 +593,11 @@
                 'lava': { name: 'Lav', emoji: '🌋', background: 'linear-gradient(135deg, #ff4500 0%, #ff8c00 100%)', color: '#333', price: 4000, unlocked: false },
                 'diamond': { name: 'Elmas', emoji: '💎', background: 'linear-gradient(135deg, #d3d3d3 0%, #e0ffff 100%)', color: '#333', price: 5000, unlocked: false },
                 'nightsky': { name: 'Gece Gökyüzü', emoji: '🌌', background: 'linear-gradient(135deg, #1e002a 0%, #4a0050 100%)', color: '#a29bfe', price: 7500, unlocked: false },
-                'hologram': { name: 'Hologram', emoji: '✨', background: 'linear-gradient(135deg, #e3f2ff 0%, #c7e0ff 100%)', color: '#1e1e1e', price: 10000, unlocked: false }
+                'hologram': { name: 'Hologram', emoji: '✨', background: 'linear-gradient(135deg, #e3f2ff 0%, #c7e0ff 100%)', color: '#1e1e1e', price: 10000, unlocked: false },
+                
+                'fireball': { name: 'Ateş Topu', emoji: '💥', background: 'linear-gradient(135deg, #ff5e00 0%, #e80e00 100%)', color: '#fff', price: 12000, unlocked: false },
+                'neon': { name: 'Neon Işık', emoji: '💡', background: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)', color: '#fff', price: 15000, unlocked: false },
+                'cyberpunk': { name: 'Siber', emoji: '🤖', background: 'linear-gradient(135deg, #ff00c8 0%, #00ffd5 100%)', color: '#1e1e1e', price: 20000, unlocked: false }
             },
 
             // Başarımlar (Ödüller dahil)
@@ -596,13 +634,16 @@
                 { id: 'a22_category_mode', icon: '📚', title: 'Kategorist', desc: 'Kategori Modunda 50 kez atış yapın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['CATEGORY'] >= 50, reward: 150 },
                 { id: 'a23_total_flips_10k', icon: '♾️', title: 'On Binli', desc: 'Toplam 10.000 atış yapın.', check: (s) => s.total >= 10000, reward: 2000 },
                 { id: 'a24_streak_15', icon: '☢️', title: 'Kritik Seri', desc: 'Aynı sonuca 15 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 15, reward: 1500 },
-                { id: 'a25_all_achievements', icon: '🥇', title: 'Mutlak Usta', desc: 'Tüm başarımları tamamlayın.', check: (s) => s.unlockedAchievements.length === Game.achievements.length, reward: 10000 }
+                { id: 'a25_all_achievements', icon: '🥇', title: 'Mutlak Usta', desc: 'Tüm başarımları tamamlayın.', check: (s) => s.unlockedAchievements.length === Game.achievements.length, reward: 10000 },
+
+                { id: 'a26_lucky_win', icon: '🍀', title: 'Talih Kuşu', desc: 'Şans Etkinliği (Lucky Flip) ile ilk büyük ödülünüzü kazanın.', check: (s) => s.longTermStats.luckyFlipsWon >= 1, reward: 500 },
+                { id: 'a27_richer_boy', icon: '💰💰', title: 'Milyoner', desc: '50.000 Jeton biriktirin (anlık jeton).', check: (s) => s.currency >= 50000, reward: 5000 },
+                { id: 'a28_long_session', icon: '⏳', title: 'Maratoncu', desc: 'Toplam 25.000 atış yapın.', check: (s) => s.total >= 25000, reward: 4000 }
             ],
 
             audio: {
                 ctx: null,
                 init: function() {
-                    // (Kısaltılmış)
                     if (!this.ctx) {
                         window.AudioContext = window.AudioContext || window.webkitAudioContext;
                         this.ctx = new AudioContext();
@@ -612,7 +653,6 @@
                     }
                 },
                 playTone: function(type) {
-                    // (Kısaltılmış)
                     this.init();
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
@@ -646,7 +686,6 @@
 
             data: {
                 load: function() {
-                    // (Kısaltılmış)
                     const saved = localStorage.getItem('CF_V2000_DATA'); 
                     const theme = localStorage.getItem('CF_V11_THEME');
                     
@@ -665,16 +704,20 @@
                             },
                             flipBonusLevel: parsed.flipBonusLevel || 1, 
                             flipSpeedLevel: parsed.flipSpeedLevel || 1, 
-                            weightedConfig: parsed.weightedConfig || Game.state.weightedConfig 
+                            luckyBonusLevel: parsed.luckyBonusLevel || 1, 
+                            weightedConfig: parsed.weightedConfig || Game.state.weightedConfig,
+                            customOutcomes: parsed.customOutcomes || Game.state.customOutcomes
                         };
                         
+                        // Özel modu defaults'a yükle
+                        if (Game.state.customOutcomes.length > 0) {
+                            Game.defaults['CUSTOM'] = Game.state.customOutcomes;
+                        }
+
                         // Yükseltmeleri hesapla
                         Game.state.flipBonus = Game.upgrades.flipBonus.effect(Game.state.flipBonusLevel);
                         Game.state.flipDuration = Game.upgrades.flipSpeed.effect(Game.state.flipSpeedLevel);
-                        
-                        // Hız sınıfını uygula
                         Game.ui.updateFlipSpeed();
-
 
                         Object.keys(Game.skins).forEach(key => {
                             if (Game.state.inventory.includes(key)) {
@@ -682,44 +725,42 @@
                             }
                         });
 
-                        // İlk yüklemede weightedConfig boşsa varsayılanı kullan
                         if (Game.state.weightedConfig.length === 0) {
                              Game.state.weightedConfig = JSON.parse(JSON.stringify(Game.defaults['NORMAL']));
                         }
                         
+                        // Mod ayarını yap
+                        let targetOutcomes = Game.defaults[Game.state.mode] || Game.defaults.NORMAL;
                         if (Game.state.mode === 'WEIGHTED') {
-                            Game.state.outcomes = Game.state.weightedConfig;
-                        } else if (!Game.state.outcomes || Game.state.outcomes.length === 0 || !Game.defaults[Game.state.mode]) {
-                            Game.logic.setMode('NORMAL');
-                        } else {
-                            // Mevcut modu yeniden ayarla (count'ları sıfırlamadan)
-                            const currentDefaults = Game.defaults[Game.state.mode];
-                            Game.state.outcomes = currentDefaults.map(def => {
-                                const existing = Game.state.outcomes.find(o => o.id === def.id);
-                                return { ...def, count: existing ? existing.count : 0 };
-                            });
+                             targetOutcomes = Game.state.weightedConfig;
+                        } else if (Game.state.mode === 'CUSTOM') {
+                            targetOutcomes = Game.state.customOutcomes.length > 0 ? Game.state.customOutcomes : Game.defaults.NORMAL;
                         }
+
+                        // Mevcut istatistikleri koruyarak çıktıları ayarla
+                        Game.state.outcomes = targetOutcomes.map(def => {
+                            const existing = parsed.outcomes ? parsed.outcomes.find(o => o.id === def.id) : null;
+                            return { ...def, count: existing ? existing.count : 0 };
+                        });
+                        
                     } else {
                         Game.logic.setMode('NORMAL');
                     }
                     Game.ui.render();
                 },
                 save: function() {
-                    // (Kısaltılmış)
                     localStorage.setItem('CF_V2000_DATA', JSON.stringify(Game.state));
                 },
                 exportData: function() {
-                    // (Kısaltılmış)
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(Game.state));
                     const node = document.createElement('a');
                     node.setAttribute("href", dataStr);
-                    node.setAttribute("download", "coin_flip_V3000_backup.json");
+                    node.setAttribute("download", "coin_flip_V3250_backup.json");
                     document.body.appendChild(node);
                     node.click();
                     node.remove();
                 },
                 importData: function(input) {
-                    // (Kısaltılmış)
                     const file = input.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -737,17 +778,22 @@
 
             logic: {
                 setMode: function(modeName) {
-                    // (Kısaltılmış)
                     if (Game.state.isAuto) return alert("Otomatik atış sırasında mod değiştirilemez.");
                     
                     Game.state.mode = modeName;
                     
                     if (modeName === 'WEIGHTED') {
                         Game.state.outcomes = JSON.parse(JSON.stringify(Game.state.weightedConfig));
+                    } else if (modeName === 'CUSTOM') {
+                         if (Game.state.customOutcomes.length === 0) {
+                            alert("Özel mod ayarlanmamış. Varsayılan moda dönülüyor.");
+                            Game.logic.setMode('NORMAL');
+                            return;
+                         }
+                         Game.state.outcomes = JSON.parse(JSON.stringify(Game.state.customOutcomes));
                     } else if (Game.defaults[modeName]) {
                         Game.state.outcomes = JSON.parse(JSON.stringify(Game.defaults[modeName]));
                     } else {
-                        // Custom moddan çıkış
                         Game.logic.setMode('NORMAL');
                         return;
                     }
@@ -765,7 +811,6 @@
                 },
 
                 getWeightedResult: function() {
-                    // (Kısaltılmış)
                     const totalWeight = Game.state.outcomes.reduce((sum, o) => sum + o.weight, 0);
                     let rand = Math.random() * totalWeight;
 
@@ -778,7 +823,6 @@
                     return Game.state.outcomes[Game.state.outcomes.length - 1];
                 },
 
-                // DÜZELTİLMİŞ: Flip mantığı ve kontrollerin açılıp kapanması
                 flip: function() {
                     const coinEl = document.getElementById('coin');
                     if (coinEl.classList.contains('is-flipping')) return;
@@ -789,7 +833,6 @@
                     coinEl.classList.add('is-flipping');
                     document.getElementById('result-text').textContent = "Dönüyor...";
                     
-                    // Otomatik atışta değilse kontrolleri devre dışı bırak
                     if (!Game.state.isAuto) Game.ui.setControls(false); 
 
                     let winner;
@@ -803,21 +846,48 @@
                     setTimeout(() => {
                         coinEl.classList.remove('is-flipping');
                         
-                        winner.count++;
+                        // İstatistikleri güncelle
+                        const winnerIndex = Game.state.outcomes.findIndex(o => o.id === winner.id);
+                        if(winnerIndex !== -1) Game.state.outcomes[winnerIndex].count++;
                         Game.state.total++;
                         
-                        // Mod sayısını artır
                         Game.state.longTermStats.modePlays = Game.state.longTermStats.modePlays || {};
                         Game.state.longTermStats.modePlays[Game.state.mode] = (Game.state.longTermStats.modePlays[Game.state.mode] || 0) + 1;
                         
+                        // --- ŞANS ETKİNLİĞİ KONTROLÜ VE JETON KAZANIMI ---
+                        let currencyGain = 1 * Game.state.flipBonus; 
+                        let luckyBonus = 0;
 
-                        // Jeton kazanımı çarpana göre
-                        const currencyGain = 1 * Game.state.flipBonus; 
+                        // %5 Şans Etkinliği Kontrolü
+                        if (Math.random() < 0.05) { 
+                            
+                            const calculatedLuckyReward = Game.upgrades.luckyBonus.effect(Game.state.luckyBonusLevel); 
+                            const baseLuckyReward = 4;
+
+                            currencyGain = baseLuckyReward * Game.state.flipBonus; 
+                            luckyBonus = calculatedLuckyReward;
+
+                            Game.state.currency += luckyBonus; 
+                            Game.state.longTermStats.totalCurrencyEarned += luckyBonus;
+                            Game.state.longTermStats.luckyFlipsWon++; 
+
+                            document.getElementById('flip-message').style.backgroundColor = 'var(--accent)';
+                            document.getElementById('flip-message').textContent = `💥 ŞANS ETKİNLİĞİ! +${currencyGain} Jeton (x${Game.state.flipBonus}) + ${luckyBonus} Ekstra Jeton!`;
+                        } else {
+                            // Normal Jeton Kazanımı
+                            document.getElementById('flip-message').style.backgroundColor = 'transparent';
+                            document.getElementById('flip-message').textContent = `+${currencyGain} Jeton Kazanıldı! (x${Game.state.flipBonus})`;
+                        }
+
+                        // Toplam Jetonu ve İstatistikleri Güncelle
                         Game.state.currency += currencyGain;
                         Game.state.longTermStats.totalCurrencyEarned += currencyGain;
-                        document.getElementById('flip-message').textContent = `+${currencyGain} Jeton Kazanıldı! (x${Game.state.flipBonus})`;
+                        
                         document.getElementById('flip-message').style.display = 'block';
-                        setTimeout(() => document.getElementById('flip-message').style.display = 'none', 1500);
+                        setTimeout(() => {
+                            document.getElementById('flip-message').style.display = 'none';
+                            document.getElementById('flip-message').style.backgroundColor = 'transparent'; // Reset
+                        }, Game.state.flipDuration * 1000 + 50);
 
                         // SERİ MANTIK
                         if (Game.state.lastId === winner.id) {
@@ -827,7 +897,6 @@
                             Game.state.streak = 1;
                             Game.state.longTermStats.totalFlipLosses++; 
                         }
-                        // Sonucun ID'sini her zaman güncelle
                         Game.state.lastId = winner.id; 
 
                         let isRecord = false;
@@ -857,14 +926,12 @@
                                 Game.logic.checkAchievements(); 
                             } 
                         } else {
-                            // Manuel atış bitince kontrolleri etkinleştir
                             Game.ui.setControls(true);
                         }
 
                     }, Game.state.flipDuration * 1000); 
                 },
 
-                // DÜZELTİLMİŞ: Auto döngüsü kontrolü
                 toggleAuto: function() {
                     const btn = document.getElementById('btn-auto');
                     const limitSelect = document.getElementById('auto-limit');
@@ -886,26 +953,20 @@
                         Game.ui.setControls(false); 
                         limitSelect.disabled = true;
 
-                        // İlk atışı başlat
                         Game.logic.flip();
                         
-                        // İlk atış bittikten sonra intervali başlat
                         Game.autoInterval = setInterval(() => {
-                            // Sadece bir önceki atış bitmişse ve otomatik mod hala açıksa atış yap
                             if (!document.getElementById('coin').classList.contains('is-flipping') && Game.state.isAuto) {
                                 Game.logic.flip();
                             } else if (!Game.state.isAuto) {
-                                // flip içinde otomatik mod kapanırsa döngüyü temizle
                                 clearInterval(Game.autoInterval);
                             }
-                        // Animasyon süresi + küçük bir gecikme ile tekrar deneme
                         }, Game.state.flipDuration * 1000 + 50); 
                     }
                 },
 
                 resetStats: function() {
-                    // (Kısaltılmış)
-                    if (confirm('Tüm istatistikleri sıfırlamak istiyor musunuz?')) {
+                    if (confirm('Tüm istatistikleri sıfırlamak istiyor musunuz? (Jetonlar ve Yükseltmeler korunur)')) {
                         Game.state.outcomes.forEach(o => o.count = 0);
                         Game.state.total = 0;
                         Game.state.streak = 0;
@@ -917,13 +978,11 @@
                 },
 
                 checkAchievements: function() {
-                    // (Kısaltılmış)
                     let changed = false;
                     Game.achievements.forEach(ach => {
                         if (!Game.state.unlockedAchievements.includes(ach.id) && ach.check(Game.state)) {
                             Game.state.unlockedAchievements.push(ach.id);
                             
-                            // Ödül Kazanımı
                             Game.state.currency += ach.reward || 0;
                             Game.state.longTermStats.totalCurrencyEarned += ach.reward || 0;
 
@@ -934,20 +993,75 @@
                     });
                     if(changed) Game.ui.renderAchievements();
                 },
-
+                
+                // ✏️ ÖZEL MODU KAYDETME VE BAŞLATMA
                 saveCustomMode: function() {
-                    // (Kısaltılmış)
-                    alert("Özel Mod kaydetme özelliği şu an pasiftir. Lütfen kod bloğunun geri kalanını inceleyin.");
+                    const inputs = document.querySelectorAll('#custom-inputs > .input-group');
+                    if (inputs.length < 2) {
+                        alert("En az 2 sonuç tanımlamalısınız.");
+                        return;
+                    }
+                    
+                    const newOutcomes = [];
+                    let hasError = false;
+                    
+                    inputs.forEach((group, index) => {
+                        const name = group.querySelector(`#custom-name-${index}`).value.trim();
+                        const emoji = group.querySelector(`#custom-emoji-${index}`).value.trim() || '❓';
+                        const color = group.querySelector(`#custom-color-${index}`).value;
+                        
+                        if (name === "") {
+                            alert("Tüm sonuçlara isim vermelisiniz.");
+                            hasError = true;
+                            return;
+                        }
+                        
+                        newOutcomes.push({
+                            id: 'c' + (index + 1),
+                            name: name,
+                            emoji: emoji,
+                            color: color,
+                            count: 0,
+                            weight: 100 / inputs.length
+                        });
+                    });
+                    
+                    if (hasError) return;
+
+                    Game.state.customOutcomes = newOutcomes;
+                    Game.defaults['CUSTOM'] = newOutcomes;
+                    
+                    Game.data.save();
+                    document.getElementById('custom-modal').classList.remove('open');
+                    Game.logic.setMode('CUSTOM');
                 },
 
+                // ⚖️ AĞIRLIKLI MODU KAYDETME VE BAŞLATMA
                 saveWeightedConfig: function() {
-                    // (Kısaltılmış)
-                    alert("Ağırlıklı Mod kaydetme özelliği şu an pasiftir. Lütfen kod bloğunun geri kalanını inceleyin.");
+                    const inputs = document.querySelectorAll('#weighted-inputs input[type="number"]');
+                    let total = 0;
+                    
+                    inputs.forEach(input => {
+                        total += parseFloat(input.value) || 0;
+                    });
+
+                    if (Math.abs(total - 100) > 0.01) {
+                        alert(`Hata: Toplam ağırlık tam 100% olmalıdır! Şu an: ${total.toFixed(2)}%`);
+                        return;
+                    }
+                    
+                    Game.state.weightedConfig = Game.state.weightedConfig.map((o, index) => {
+                        o.weight = parseFloat(inputs[index].value);
+                        return o;
+                    });
+                    
+                    Game.data.save();
+                    document.getElementById('weighted-modal').classList.remove('open');
+                    Game.logic.setMode('WEIGHTED');
                 }
             },
 
             shop: {
-                // DÜZELTİLMİŞ: Maliyet hesaplama mantığı
                 buyUpgrade: function(upgradeId) {
                     const upgrade = Game.upgrades[upgradeId];
                     let currentLevel = 0;
@@ -956,6 +1070,8 @@
                         currentLevel = Game.state.flipBonusLevel;
                     } else if (upgradeId === 'flipSpeed') {
                         currentLevel = Game.state.flipSpeedLevel;
+                    } else if (upgradeId === 'luckyBonus') {
+                        currentLevel = Game.state.luckyBonusLevel;
                     }
 
                     if (currentLevel >= upgrade.maxLevel) {
@@ -963,7 +1079,6 @@
                         return;
                     }
 
-                    // DÜZELTİLDİ: Maliyet hesaplaması (Bir sonraki seviyeye geçiş maliyeti)
                     const cost = Math.ceil(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
                     
                     if (Game.state.currency >= cost) {
@@ -976,6 +1091,8 @@
                             Game.state.flipSpeedLevel++;
                             Game.state.flipDuration = upgrade.effect(Game.state.flipSpeedLevel);
                             Game.ui.updateFlipSpeed(); 
+                        } else if (upgradeId === 'luckyBonus') {
+                            Game.state.luckyBonusLevel++;
                         }
                         
                         Game.data.save();
@@ -988,7 +1105,6 @@
                     }
                 },
 
-                // EKLENDİ: Kozmetik satın alma
                 buySkin: function(skinId) {
                     const skin = Game.skins[skinId];
                     if (Game.state.inventory.includes(skinId)) {
@@ -1012,12 +1128,10 @@
                     }
                 },
                 
-                // EKLENDİ: Kozmetik donatma
                 equipSkin: function(skinId) {
                     Game.state.activeSkin = skinId;
                     Game.data.save();
                     Game.shop.renderShop();
-                    // Jeton görünümünü güncellemek için renderHeader'ı çağırmak yeterli
                     Game.ui.initializeCoinVisuals(Game.state.mode);
                     alert(`${Game.skins[skinId].name} donatıldı.`);
                 },
@@ -1029,14 +1143,17 @@
                     Game.shop.renderSkins();
                 },
 
-                // DÜZELTİLMİŞ: Yükseltmeleri render etme
                 renderUpgrades: function() {
                     const container = document.getElementById('upgrade-section');
                     container.innerHTML = '';
                     
                     Object.keys(Game.upgrades).forEach(upgradeId => {
                         const upgrade = Game.upgrades[upgradeId];
-                        let currentLevel = (upgradeId === 'flipBonus') ? Game.state.flipBonusLevel : Game.state.flipSpeedLevel;
+                        
+                        let currentLevel = 0;
+                        if (upgradeId === 'flipBonus') currentLevel = Game.state.flipBonusLevel;
+                        else if (upgradeId === 'flipSpeed') currentLevel = Game.state.flipSpeedLevel;
+                        else if (upgradeId === 'luckyBonus') currentLevel = Game.state.luckyBonusLevel;
                         
                         let cost;
                         const maxed = currentLevel >= upgrade.maxLevel;
@@ -1044,10 +1161,10 @@
                         if (maxed) {
                             cost = 0;
                         } else {
-                             // Düzeltilmiş maliyet hesaplaması
                              cost = Math.ceil(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel)); 
                         }
 
+                        const descText = upgrade.desc(currentLevel); 
                         
                         const buttonHTML = maxed 
                             ? `<button class="btn btn-secondary" disabled>Max Seviye</button>`
@@ -1058,7 +1175,7 @@
                                 <div class="upgrade-info">
                                     <div>
                                         <h4>${upgrade.icon} ${upgrade.name}</h4>
-                                        <p class="upgrade-desc">${upgrade.desc(currentLevel)}</p>
+                                        <p class="upgrade-desc">${descText}</p>
                                     </div>
                                     <div class="upgrade-level">
                                         Seviye: ${currentLevel} / ${upgrade.maxLevel}
@@ -1070,7 +1187,6 @@
                     });
                 },
 
-                // EKLENDİ: Kozmetikleri render etme
                 renderSkins: function() {
                     const container = document.getElementById('shop-items-grid');
                     container.innerHTML = '';
@@ -1103,16 +1219,27 @@
 
             analyst: {
                 calculatePrediction: function() {
-                   // (Kısaltılmış)
-                   return "Analist: İstatistikler dengede görünüyor. Atışınız %50 şansla devam edecektir.";
+                    // Bu kısım kompleks tahminler içerebilir, şimdilik basit tutalım.
+                    let totalFlips = Game.state.outcomes.reduce((sum, o) => sum + o.count, 0);
+                    if (totalFlips < 20) return "Analist: Yeterli veri yok. Atış yapmaya devam edin.";
+
+                    let lowestOutcome = Game.state.outcomes.reduce((min, o) => o.count < min.count ? o : min, { count: Infinity });
+                    let highestOutcome = Game.state.outcomes.reduce((max, o) => o.count > max.count ? o : max, { count: -Infinity });
+
+                    if (highestOutcome.count - lowestOutcome.count > totalFlips * 0.1) {
+                         return `Analist: İstatistiksel sapma var! Bir sonraki atışınızın **${lowestOutcome.name} (${lowestOutcome.emoji})** gelme olasılığı istatistiksel olarak daha yüksektir.`;
+                    } else {
+                         return "Analist: İstatistikler dengede görünüyor. Atışınız %50 şansla devam edecektir. Şansınız bol olsun!";
+                    }
                 },
 
                 renderAnalyst: function() {
-                    // (Kısaltılmış)
+                    const luckyExtra = Game.upgrades.luckyBonus.effect(Game.state.luckyBonusLevel);
                     const longStats = document.getElementById('analyst-long-stats');
                     longStats.innerHTML = `
                         <div class="stat-row"><span>Toplam Kazanılan Jeton:</span> <span>💰 ${Game.state.longTermStats.totalCurrencyEarned}</span></div>
                         <div class="stat-row"><span>Mevcut Jeton Çarpanı:</span> <span>x${Game.state.flipBonus}</span></div>
+                        <div class="stat-row"><span>Şans Etkinliği Ekstra:</span> <span>💰 ${luckyExtra}</span></div>
                         <div class="stat-row"><span>Atış Hızı Süresi:</span> <span>${Game.state.flipDuration}s</span></div>
                         <div class="stat-row"><span>Toplam Başarımlar:</span> <span>🏆 ${Game.state.unlockedAchievements.length} / ${Game.achievements.length}</span></div>
                     `;
@@ -1123,24 +1250,20 @@
 
             ui: {
                 renderHeader: function() {
-                    // (Kısaltılmış)
                     document.getElementById('currency-display').textContent = `💰 ${Game.state.currency}`;
                 },
                 
                 updateFlipSpeed: function() {
-                    // (Kısaltılmış)
                     const body = document.getElementById('game-body');
                     body.style.setProperty('--flip-duration', `${Game.state.flipDuration}s`);
                 },
 
                 toggleMenu: function(forceState) {
-                    // (Kısaltılmış)
                     const modal = document.getElementById('main-menu-modal');
                     if (forceState === false) modal.classList.remove('open');
                     else modal.classList.toggle('open');
                 },
                 
-                // DÜZELTİLMİŞ: renderStats fonksiyonu
                 renderStats: function() {
                     const container = document.getElementById('stats-container');
                     const totalFlipsEl = document.getElementById('total-flips');
@@ -1149,7 +1272,6 @@
 
                     container.innerHTML = '';
                     
-                    // Mode ismini güncelle
                     modeNameEl.textContent = Game.state.mode === 'NORMAL' ? 'Normal' : 
                                              Game.state.mode === 'WEIGHTED' ? 'Ağırlıklı' :
                                              Game.state.mode === 'CUSTOM' ? 'Özel' :
@@ -1184,35 +1306,29 @@
                 },
 
                 setControls: function(enabled) {
-                    // (Kısaltılmış)
                     document.getElementById('btn-flip').disabled = !enabled;
                     document.getElementById('btn-reset').disabled = !enabled;
                 },
                 
                 openShopModal: function() {
-                    // (Kısaltılmış)
                     Game.shop.renderShop();
                     document.getElementById('shop-modal').classList.add('open');
                 },
                 openAnalystModal: function() {
-                    // (Kısaltılmış)
                     Game.analyst.renderAnalyst();
                     document.getElementById('analyst-modal').classList.add('open');
                 },
                 
                 initializeCoinVisuals: function(modeName) {
-                    // (Kısaltılmış)
                     const coinEl = document.getElementById('coin');
                     const currentSkinId = Game.state.activeSkin;
                     const skin = Game.skins[currentSkinId];
                     
                     if (currentSkinId === 'default' && Game.defaults[modeName]) {
-                         // Eğer default skin aktifse, coin'i sarı varsayılan coin olarak ayarla
                         coinEl.style.background = Game.skins['default'].background;
                         coinEl.style.color = Game.skins['default'].color;
                         coinEl.textContent = Game.skins['default'].emoji;
                     } else if (skin) {
-                         // Eğer bir kozmetik aktifse, coin'i kozmetik görseliyle ayarla
                          coinEl.style.background = skin.background;
                          coinEl.style.color = skin.color;
                          coinEl.textContent = skin.emoji; 
@@ -1224,19 +1340,15 @@
                 },
                 
                 updateResult: function(winner, isRecord) {
-                    // (Kısaltılmış)
                     const coinEl = document.getElementById('coin');
-                    // Deri/Kozmetik ayarları: Eğer aktif bir skin varsa, onun görselini kullan.
                     let skin = Game.skins[Game.state.activeSkin];
                     
                     if (Game.state.activeSkin === 'default') {
-                        // Varsayılan modlarda outcome'un rengini kullan (skin yoksa)
                         coinEl.style.background = winner.color;
-                        coinEl.style.color = '#fff'; // Varsayılan metin rengi
+                        coinEl.style.color = '#fff'; 
                         coinEl.textContent = winner.emoji;
 
                     } else if (skin) {
-                         // Seçilen kozmetiğin arka plan ve rengini kullan
                          coinEl.style.background = skin.background;
                          coinEl.style.color = skin.color;
                          coinEl.textContent = winner.emoji || skin.emoji; 
@@ -1260,12 +1372,10 @@
 
 
                 renderAchievements: function() {
-                    // (Kısaltılmış)
                     const container = document.getElementById('achievements-list');
                     container.innerHTML = '';
                     Game.achievements.forEach(ach => {
                         const isUnlocked = Game.state.unlockedAchievements.includes(ach.id);
-                        // Başarım öğesinin üzerine gelindiğinde desc gösterilebilir (Title attribute)
                         container.innerHTML += `
                             <div class="achievement-item ${isUnlocked ? 'unlocked' : ''}" 
                                 onclick="Game.ui.openAchInfoModal('${ach.id}')">
@@ -1276,7 +1386,6 @@
                 },
 
                 openAchInfoModal: function(achId) {
-                    // (Kısaltılmış)
                     const ach = Game.achievements.find(a => a.id === achId);
                     const isUnlocked = Game.state.unlockedAchievements.includes(achId);
                     
@@ -1296,25 +1405,94 @@
                     document.getElementById('ach-info-modal').classList.add('open');
                 },
                 
+                // ⚖️ AĞIRLIKLI MOD MODALINI AÇ
                 openWeightedModal: function() {
-                    // (Kısaltılmış)
-                    alert("Ağırlıklı Mod ayarları modalı şu an pasiftir. Lütfen kod bloğunun geri kalanını inceleyin.");
+                    const container = document.getElementById('weighted-inputs');
+                    container.innerHTML = '';
+                    
+                    if (Game.state.weightedConfig.length === 0) {
+                        Game.state.weightedConfig = JSON.parse(JSON.stringify(Game.defaults['NORMAL']));
+                    }
+                    
+                    let totalWeight = 0;
+
+                    Game.state.weightedConfig.forEach((o, index) => {
+                        totalWeight += o.weight;
+                        container.innerHTML += `
+                            <div class="input-group">
+                                <span class="input-emoji">${o.emoji}</span>
+                                <input type="text" value="${o.name}" class="input-text" disabled style="flex:1;">
+                                <input type="number" id="weight-${index}" class="input-text" value="${o.weight.toFixed(2)}" min="0" max="100" step="0.01" style="width: 80px;" oninput="Game.ui.updateWeightedTotal()">
+                                <span style="width: 20px;">%</span>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('weighted-total').textContent = `${totalWeight.toFixed(2)}%`;
+                    Game.ui.updateWeightedTotal(); 
+                    document.getElementById('weighted-modal').classList.add('open');
                 },
+                
+                // AĞIRLIK TOPLAMINI GÜNCELLE
+                updateWeightedTotal: function() {
+                    const inputs = document.querySelectorAll('#weighted-inputs input[type="number"]');
+                    let total = 0;
+                    inputs.forEach(input => {
+                        total += parseFloat(input.value) || 0;
+                    });
+                    const totalEl = document.getElementById('weighted-total');
+                    const errorEl = document.getElementById('weighted-error');
+                    
+                    totalEl.textContent = `${total.toFixed(2)}%`;
+                    if (Math.abs(total - 100) > 0.01) {
+                        totalEl.style.color = 'var(--danger)';
+                        errorEl.textContent = `Hata: Toplam ağırlık 100% olmalı. Fark: ${(total - 100).toFixed(2)}%`;
+                    } else {
+                        totalEl.style.color = 'var(--primary)';
+                        errorEl.textContent = '';
+                    }
+                },
+                
+                // ✏️ ÖZEL MOD MODALINI AÇ
                 openCustomModal: function() {
-                    // (Kısaltılmış)
-                    alert("Özel Mod oluşturma modalı şu an pasiftir. Lütfen kod bloğunun geri kalanını inceleyin.");
+                    const container = document.getElementById('custom-inputs');
+                    container.innerHTML = '';
+                    
+                    // Eğer kaydedilmiş custom mod varsa onları yükle
+                    if (Game.state.customOutcomes.length > 0) {
+                        Game.state.customOutcomes.forEach((o, index) => {
+                             Game.ui.addCustomInput(o.name, o.emoji, o.color);
+                        });
+                    } else {
+                        // Varsayılan olarak 2 adet girdi ekle
+                        Game.ui.addCustomInput('Yazı', '✍️', '#ff7675');
+                        Game.ui.addCustomInput('Tura', '👑', '#00b894');
+                    }
+                    document.getElementById('custom-modal').classList.add('open');
                 },
-                addCustomInput: function() {
-                    // (Kısaltılmış)
-                    alert("Özel Mod girdi ekleme özelliği şu an pasiftir. Lütfen kod bloğunun geri kalanını inceleyin.");
+
+                // ÖZEL MODA INPUT EKLE
+                addCustomInput: function(name = '', emoji = '❓', color = '#999999') {
+                    const container = document.getElementById('custom-inputs');
+                    if (container.children.length >= 5) {
+                        alert("Maksimum 5 sonuç ekleyebilirsiniz.");
+                        return;
+                    }
+                    
+                    const index = container.children.length;
+
+                    const newGroup = document.createElement('div');
+                    newGroup.className = 'input-group';
+                    newGroup.id = `custom-input-${index}`;
+                    newGroup.innerHTML = `
+                        <input type="text" placeholder="Adı" value="${name}" id="custom-name-${index}" class="input-text" style="flex:2;">
+                        <input type="text" placeholder="Emoji" value="${emoji}" id="custom-emoji-${index}" class="input-text input-emoji" maxlength="2" style="flex:0.5;">
+                        <input type="color" value="${color}" id="custom-color-${index}" class="input-color">
+                        <button onclick="document.getElementById('custom-input-${index}').remove()" class="icon-btn" style="color:var(--danger); font-size:1.2rem;">🗑️</button>
+                    `;
+                    container.appendChild(newGroup);
                 },
-                toggleTheme: function() {
-                    // (Kısaltılmış)
-                    const isDark = document.body.classList.toggle('dark-mode');
-                    localStorage.setItem('CF_V11_THEME', isDark ? 'dark' : 'light');
-                },
+
                 fireConfetti: function(color) {
-                    // (Kısaltılmış)
                 },
 
 
@@ -1333,11 +1511,10 @@
         window.onload = function() {
             Game.data.load();
             
-            // Sesin başlaması için kullanıcı etkileşimi bekleme
             document.body.addEventListener('click', function() {
                 Game.audio.init();
             }, { once: true });
         };
     </script>
 </body>
-    </html>
+  </html>
