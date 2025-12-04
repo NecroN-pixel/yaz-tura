@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimate Coin Flip 👑 V 3.250 - Tam Sürüm</title>
-    <meta name="description" content="Gelişmiş olasılık ve yazı tura simülasyonu.">
+    <title>CoinFlip Galaxy 🌌 V 4.1 - Yüksek Başarım Güncellemesi</title>
+    <meta name="description" content="Gelişmiş olasılık ve yazı tura simülasyonu. Yüksek Başarım ve Kozmetikler!">
     <style>
         /* =========================================
            1. CSS DEĞİŞKENLERİ & TEMA
@@ -38,9 +38,13 @@
             --secondary: #404040;
         }
         
-        /* Hız yükseltmesi için özel CSS değişkeni */
         .fast-flip {
             --flip-duration: 0.5s !important; 
+        }
+
+        /* Yeni: Arka Plan Teması için özel alan */
+        body.theme-applied {
+            transition: background-image 1s ease-in-out;
         }
 
         /* =========================================
@@ -56,6 +60,11 @@
             min-height: 100vh;
             transition: background-color 0.3s, color 0.3s;
             overflow-x: hidden;
+            /* Kozmetik Arka Planı için yer tutucu */
+            background-image: none;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         /* Header */
@@ -132,13 +141,12 @@
         
         .coin-message {
              font-size: 0.9rem; color: var(--text-main); font-weight: 600; margin-top: 10px;
-             /* ŞANS ETKİNLİĞİ için eklendi */
              padding: 5px 10px; border-radius: 8px;
         }
         
         /* ŞANS ETKİNLİĞİ MESAJI */
-        .coin-message[style*="background-color: var(--accent)"] {
-            background-color: var(--accent);
+        .coin-message[style*="background-color: var(--accent)"],
+        .coin-message[style*="background-color: var(--warning)"] {
             color: var(--card-bg) !important;
             animation: pulse 1s infinite alternate;
         }
@@ -180,6 +188,10 @@
         .btn-secondary:hover { background-color: #e0e0e0; }
         .dark-mode .btn-secondary { background-color: var(--secondary); color: var(--text-main); }
         .dark-mode .btn-secondary:hover { background-color: #555; }
+        
+        .btn-danger { background-color: var(--danger); color: #fff; }
+        .btn-danger:active { transform: translateY(2px); box-shadow: none; }
+
 
         .auto-section {
             display: flex; gap: 10px; align-items: center;
@@ -256,16 +268,19 @@
 
         /* Achievements Grid */
         .achievements-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px;
+            /* Başarımları daha kompakt göstermek için grid yapısı büyütüldü. */
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px;
         }
         .achievement-item {
-            background: var(--bg-color); border-radius: 10px; padding: 10px;
+            background: var(--bg-color); border-radius: 10px; padding: 8px;
             text-align: center; opacity: 0.4; filter: grayscale(100%); transition: all 0.3s;
-            cursor: pointer; /* Tıklanabilir yaptık */
+            cursor: pointer; 
+            border: 1px solid transparent;
         }
         .achievement-item.unlocked { opacity: 1; filter: grayscale(0%); background: #e8f8f5; border: 1px solid var(--accent); }
         .dark-mode .achievement-item.unlocked { background: #1e3a30; }
-        .ach-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+        .ach-icon { font-size: 1.2rem; display: block; margin-bottom: 5px; }
+        .ach-icon.skin-reward { color: var(--primary); font-size: 1.5rem; } /* Skin ödülü olanlar */
 
         /* Başarım Açıklama Modal */
         #ach-info-modal .modal-content {
@@ -274,7 +289,7 @@
             padding: 20px;
             margin-bottom: 20%;
         }
-        #ach-info-modal.open { align-items: center; } /* Ortalamak için */
+        #ach-info-modal.open { align-items: center; } 
         #ach-info-modal h3 { margin-top: 0; color: var(--primary); }
         #ach-info-modal p { font-size: 1rem; color: var(--text-main); }
         #ach-reward { font-weight: 700; color: var(--warning); margin-top: 10px; }
@@ -287,7 +302,6 @@
         .input-color { width: 40px; height: 40px; border: none; background: none; cursor: pointer; }
         .input-emoji { width: 50px; text-align: center; }
 
-        /* Küçük ekranlar için footer ayarı */
         .version-footer {
             position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center;
             font-size: 0.75rem; color: var(--text-muted); z-index: 90;
@@ -308,7 +322,7 @@
     <div id="audio-engine-status" style="display:none;"></div>
 
     <header class="app-header">
-        <div class="app-logo">👑 CoinFlip Ultimate</div>
+        <div class="app-logo">🌌 CoinFlip Galaxy</div>
         <div class="header-controls">
             <span id="currency-display">💰 0</span>
             <button class="icon-btn" onclick="Game.ui.openShopModal()">🛍️</button>
@@ -333,7 +347,7 @@
                     <span>🎲</span> Parayı At
                 </button>
                 <button id="btn-reset" class="btn btn-secondary" onclick="Game.logic.resetStats()">
-                    <span>🔄</span> Sıfırla
+                    <span>🔄</span> İstatistik Sıfırla
                 </button>
             </div>
             
@@ -342,6 +356,8 @@
                     <option value="10">10 Kez</option>
                     <option value="50">50 Kez</option>
                     <option value="100">100 Kez</option>
+                    <option value="1000">1.000 Kez</option>
+                    <option value="10000">10.000 Kez</option>
                     <option value="999999">Sınırsız</option>
                 </select>
                 <button id="btn-auto" class="btn btn-secondary" onclick="Game.logic.toggleAuto()">
@@ -361,14 +377,14 @@
         </div>
 
         <div class="dashboard-card">
-            <h3 style="margin-top:0; font-size:1rem;">🏆 Başarımlar</h3>
+            <h3 style="margin-top:0; font-size:1rem;">🏆 Başarımlar (<span id="unlocked-achievements-count">0</span> / <span id="total-achievements-count">1000+</span>)</h3>
             <div class="achievements-grid" id="achievements-list">
                 </div>
         </div>
 
     </div>
 
-    <div class="version-footer">V 3.250 - Tam Çalışır Sürüm | Ağırlıklı ve Özel Modlar Aktif</div>
+    <div class="version-footer">V 4.1 - Yüksek Başarım ve Kozmetik Güncellemesi</div>
     <canvas id="confetti-canvas"></canvas>
 
     <div id="main-menu-modal" class="modal-backdrop" onclick="if(event.target===this) Game.ui.toggleMenu()">
@@ -380,15 +396,19 @@
                 <li onclick="Game.logic.setMode('RPS')">✊ Taş-Kağıt-Makas Modu</li>
                 <li onclick="Game.logic.setMode('SIMPLE')">❓ Basit Mod (Evet/Hayır)</li>
                 <li onclick="Game.logic.setMode('DICE')">🎲 Zar Modu (1-6)</li>
-                <li onclick="Game.logic.setMode('CATEGORY')">📚 12 Kategori Modu (YENİ)</li>
+                <li onclick="Game.logic.setMode('CATEGORY')">📚 12 Kategori Modu</li>
                 <li onclick="Game.ui.openCustomModal()">✏️ Özel Mod Oluştur</li>
                 <hr style="width:100%; border-color: var(--bg-color);">
                 <li onclick="Game.ui.toggleTheme()">🌓 Tema Değiştir (Koyu/Açık)</li>
                 <li onclick="Game.data.exportData()">💾 Verileri Kaydet (İndir)</li>
                 <li onclick="document.getElementById('import-file').click()">📂 Verileri Yükle</li>
                 <input type="file" id="import-file" style="display:none" onchange="Game.data.importData(this)">
+                <hr style="width:100%; border-color: var(--bg-color);">
             </ul>
-            <button class="btn btn-secondary" style="width:100%; margin-top:20px;" onclick="Game.ui.toggleMenu()">Kapat</button>
+            <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="Game.logic.hardReset()">
+                🚨 HESABI TAM SIFIRLA (Hard Reset)
+            </button>
+            <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="Game.ui.toggleMenu()">Kapat</button>
         </div>
     </div>
 
@@ -402,6 +422,7 @@
                  </div>
             
             <h3 style="margin-top: 20px;">🎨 Kozmetik Ürünler</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Bazı kozmetikler sadece başarımlarla açılabilir.</p>
             <div id="shop-items-grid" class="shop-grid">
                 </div>
             <button class="btn btn-secondary" style="width:100%; margin-top:20px;" onclick="document.getElementById('shop-modal').classList.remove('open')">Kapat</button>
@@ -470,7 +491,9 @@
     <script>
         /**
          * ====================================================================
-         * GAME ENGINE V 3.250 - TAM ÇALIŞIR SÜRÜM
+         * GAME ENGINE V 4.1 - YÜKSEK BAŞARIM VE KOZMETİK GÜNCELLEMESİ
+         * Başarım sayısı 1000+ hedeflendi.
+         * Kozmetikler fiyata göre sıralandı ve yeni temalar eklendi.
          * ====================================================================
          */
         const Game = {
@@ -502,7 +525,9 @@
                     totalFlipLosses: 0, 
                     modePlays: {},
                     luckyFlipsWon: 0,
-                    auto100Completed: false 
+                    auto100Completed: false,
+                    auto1kCompleted: false,
+                    totalFlipsMade: 0 
                 }
             },
             
@@ -542,7 +567,7 @@
                     { id: 'cat11', name: 'Para', emoji: '💵', color: '#f1c40f', count: 0, weight: 8.33 },
                     { id: 'cat12', name: 'Şans', emoji: '🍀', color: '#38ada9', count: 0, weight: 8.33 }
                 ],
-                CUSTOM: [] // Kullanıcı tarafından doldurulur
+                CUSTOM: [] 
             },
 
             // Market Yükseltmeleri
@@ -583,65 +608,109 @@
                 }
             },
 
-            skins: {
-                'default': { name: 'Varsayılan', emoji: '🪙', background: 'linear-gradient(135deg, #f1c40f 0%, #f39c12 100%)', color: '#fff', price: 0, unlocked: true },
-                'gold': { name: 'Altın', emoji: '🏆', background: 'linear-gradient(135deg, #ffd700 0%, #daa520 100%)', color: '#333', price: 200, unlocked: false },
-                'space': { name: 'Uzay Taşı', emoji: '👽', background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)', color: '#fff', price: 500, unlocked: false },
-                'ruby': { name: 'Yakut Zar', emoji: '♦️', background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)', color: '#fff', price: 1000, unlocked: false },
-                'matrix': { name: 'Matrix', emoji: '🔢', background: 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)', color: '#000', price: 1500, unlocked: false },
-                'ocean': { name: 'Okyanus', emoji: '🌊', background: 'linear-gradient(135deg, #4dc3ff 0%, #3a8fe9 100%)', color: '#fff', price: 2500, unlocked: false },
-                'lava': { name: 'Lav', emoji: '🌋', background: 'linear-gradient(135deg, #ff4500 0%, #ff8c00 100%)', color: '#333', price: 4000, unlocked: false },
-                'diamond': { name: 'Elmas', emoji: '💎', background: 'linear-gradient(135deg, #d3d3d3 0%, #e0ffff 100%)', color: '#333', price: 5000, unlocked: false },
-                'nightsky': { name: 'Gece Gökyüzü', emoji: '🌌', background: 'linear-gradient(135deg, #1e002a 0%, #4a0050 100%)', color: '#a29bfe', price: 7500, unlocked: false },
-                'hologram': { name: 'Hologram', emoji: '✨', background: 'linear-gradient(135deg, #e3f2ff 0%, #c7e0ff 100%)', color: '#1e1e1e', price: 10000, unlocked: false },
-                
-                'fireball': { name: 'Ateş Topu', emoji: '💥', background: 'linear-gradient(135deg, #ff5e00 0%, #e80e00 100%)', color: '#fff', price: 12000, unlocked: false },
-                'neon': { name: 'Neon Işık', emoji: '💡', background: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)', color: '#fff', price: 15000, unlocked: false },
-                'cyberpunk': { name: 'Siber', emoji: '🤖', background: 'linear-gradient(135deg, #ff00c8 0%, #00ffd5 100%)', color: '#1e1e1e', price: 20000, unlocked: false }
-            },
+            // Kozmetikler (Fiyata göre sıralandı ve yenileri eklendi)
+            skins: [
+                // Fiyat: 0 (Başlangıç ve Başarım)
+                { id: 'default', name: 'Varsayılan', emoji: '🪙', background: 'linear-gradient(135deg, #f1c40f 0%, #f39c12 100%)', color: '#fff', price: 0, unlocked: true, type: 'basic', theme: null },
+                { id: 'lucky_charm', name: 'Şans Tılsımı', emoji: '🍀', background: 'linear-gradient(135deg, #1abc9c 0%, #16a085 100%)', color: '#fff', price: 0, unlocked: false, type: 'achievement', lockedBy: 'a36_lucky_win_10', theme: null },
+                { id: 'streak_master', name: 'Seri Efendisi', emoji: '🔱', background: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)', color: '#fff', price: 0, unlocked: false, type: 'achievement', lockedBy: 'a60_streak_25', theme: null },
+                { id: 'mode_explorer', name: 'Mod Gezgini', emoji: '🧭', background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)', color: '#fff', price: 0, unlocked: false, type: 'achievement', lockedBy: 'a76_all_modes', theme: null },
+                { id: 'coin_legend', name: 'Jeton Efsanesi', emoji: '⭐', background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)', color: '#fff', price: 0, unlocked: false, type: 'achievement', lockedBy: 'a90_richer_boy_max', theme: null },
+                { id: 'galaxy_master', name: 'Galaksi Ustası', emoji: '🌌', background: 'linear-gradient(135deg, #7f8c8d 0%, #2c3e50 100%)', color: '#fff', price: 0, unlocked: false, type: 'achievement', lockedBy: 'a100_absolute_master', theme: {backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(https://picsum.photos/480/800?blur=5&random=1)', color: '#fff' } },
 
-            // Başarımlar (Ödüller dahil)
-            achievements: [
-                { id: 'a1_first_flip', icon: '🐣', title: 'İlk Adım', desc: 'İlk atışınızı yapın.', check: (s) => s.total >= 1, reward: 10 },
-                { id: 'a2_ten_flips', icon: '🔟', title: 'Onluk', desc: '10 atış yapın.', check: (s) => s.total >= 10, reward: 25 },
-                { id: 'a3_century', icon: '💯', title: 'Asırlık', desc: '100 atış yapın.', check: (s) => s.total >= 100, reward: 100 },
-                { id: 'a4_millennium', icon: '🔥', title: 'Bin Atışçı', desc: '1.000 atış yapın.', check: (s) => s.total >= 1000, reward: 500 },
-                { id: 'a5_master', icon: '👑', title: 'Usta', desc: '5.000 atış yapın.', check: (s) => s.total >= 5000, reward: 1000 },
-                
-                { id: 'a6_streak_3', icon: '✨', title: 'Seri 3', desc: 'Aynı sonuca 3 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 3, reward: 50 },
-                { id: 'a7_streak_5', icon: '🔥', title: 'Seri 5', desc: 'Aynı sonuca 5 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 5, reward: 150 },
-                { id: 'a8_streak_10', icon: '🧨', title: 'Zincirleme', desc: 'Aynı sonuca 10 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 10, reward: 500 },
-                
-                { id: 'a9_weighted_test', icon: '⚖️', title: 'Olasılıkçı', desc: 'Ağırlıklı modu kullanın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['WEIGHTED'] >= 10, reward: 50 },
-                { id: 'a10_custom_mode', icon: '✏️', title: 'Yaratıcı', desc: 'Özel mod oluşturun ve 10 kez oynayın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['CUSTOM'] >= 10, reward: 50 },
-                
-                { id: 'a11_rich_boy', icon: '💰', title: 'Cebinde Para Var', desc: '2.000 Jeton biriktirin (anlık jeton).', check: (s) => s.currency >= 2000, reward: 200 },
-                { id: 'a12_tycoon', icon: '💎', title: 'Zengin', desc: '10.000 Jeton biriktirin (anlık jeton).', check: (s) => s.currency >= 10000, reward: 1000 },
-                { id: 'a13_cosmetics', icon: '🛍️', title: 'Giyin Kuşan', desc: 'Bir kozmetik ürün satın alın.', check: (s) => Game.state.inventory.length > 1, reward: 50 },
-                
-                { id: 'a14_max_bonus_2', icon: '🌟', title: 'Bonus 2x', desc: 'Jeton Çarpanını 2. seviyeye yükseltin.', check: (s) => s.flipBonusLevel >= 2, reward: 100 },
-                { id: 'a15_max_bonus_5', icon: '⚡', title: 'Bonus 5x', desc: 'Jeton Çarpanını 5. seviyeye yükseltin.', check: (s) => s.flipBonusLevel >= 5, reward: 500 },
-                
-                { id: 'a16_mode_dice', icon: '🎲', title: 'Zar Tutkunu', desc: 'Zar Modunda 100 kez atış yapın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['DICE'] >= 100, reward: 200 },
-                { id: 'a17_mode_rps', icon: '✊', title: 'Taşçı', desc: 'Taş-Kağıt-Makas Modunda 100 kez atış yapın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['RPS'] >= 100, reward: 200 },
+                // Fiyat: Satın Alınabilir
+                { id: 'wood', name: 'Tahta', emoji: '🪵', background: 'linear-gradient(135deg, #966f33 0%, #6f4e1f 100%)', color: '#fff', price: 50, unlocked: false, type: 'shop', theme: null },
+                { id: 'gold', name: 'Altın', emoji: '🏆', background: 'linear-gradient(135deg, #ffd700 0%, #daa520 100%)', color: '#333', price: 200, unlocked: false, type: 'shop', theme: null },
+                { id: 'space', name: 'Uzay Taşı', emoji: '👽', background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)', color: '#fff', price: 500, unlocked: false, type: 'shop', theme: null },
+                { id: 'ruby', name: 'Yakut Zar', emoji: '♦️', background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)', color: '#fff', price: 1000, unlocked: false, type: 'shop', theme: null },
+                { id: 'matrix', name: 'Matrix', emoji: '🔢', background: 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)', color: '#000', price: 1500, unlocked: false, type: 'shop', theme: null },
+                { id: 'ocean', name: 'Okyanus', emoji: '🌊', background: 'linear-gradient(135deg, #4dc3ff 0%, #3a8fe9 100%)', color: '#fff', price: 2500, unlocked: false, type: 'shop', theme: null },
+                { id: 'ice', name: 'Buz', emoji: '🧊', background: 'linear-gradient(135deg, #d4f0ff 0%, #9bc9ff 100%)', color: '#333', price: 3000, unlocked: false, type: 'shop', theme: null },
+                { id: 'lava', name: 'Lav', emoji: '🌋', background: 'linear-gradient(135deg, #ff4500 0%, #ff8c00 100%)', color: '#333', price: 4000, unlocked: false, type: 'shop', theme: null },
+                { id: 'nightsky', name: 'Gece Gökyüzü', emoji: '🌌', background: 'linear-gradient(135deg, #1e002a 0%, #4a0050 100%)', color: '#a29bfe', price: 7500, unlocked: false, type: 'shop', theme: null },
+                { id: 'rainbow', name: 'Gökkuşağı', emoji: '🌈', background: 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)', color: '#fff', price: 8000, unlocked: false, type: 'shop', theme: null },
+                { id: 'hologram', name: 'Hologram', emoji: '✨', background: 'linear-gradient(135deg, #e3f2ff 0%, #c7e0ff 100%)', color: '#1e1e1e', price: 10000, unlocked: false, type: 'shop', theme: null },
+                { id: 'fireball', name: 'Ateş Topu', emoji: '💥', background: 'linear-gradient(135deg, #ff5e00 0%, #e80e00 100%)', color: '#fff', price: 12000, unlocked: false, type: 'shop', theme: null },
+                { id: 'neon', name: 'Neon Işık', emoji: '💡', background: 'linear-gradient(135deg, #00f260 0%, #0575e6 100%)', color: '#fff', price: 15000, unlocked: false, type: 'shop', theme: null },
+                { id: 'alien', name: 'Uzaylı', emoji: '👾', background: 'linear-gradient(135deg, #4efd54 0%, #209c25 100%)', color: '#000', price: 18000, unlocked: false, type: 'shop', theme: null },
+                { id: 'cyberpunk', name: 'Siber', emoji: '🤖', background: 'linear-gradient(135deg, #ff00c8 0%, #00ffd5 100%)', color: '#1e1e1e', price: 20000, unlocked: false, type: 'shop', theme: null },
 
-                { id: 'a18_all_skins', icon: '🌈', title: 'Koleksiyoncu', desc: 'Tüm kozmetik ürünleri toplayın.', check: (s) => s.inventory.length === Object.keys(Game.skins).length, reward: 5000 },
-
-                { id: 'a19_auto_100', icon: '🤖', title: 'Otomatik Pilot', desc: 'Tek seferde 100 atış yapın.', check: (s) => s.longTermStats.auto100Completed === true, reward: 300 },
-                
-                { id: 'a20_fast_flip_1', icon: '⏱️', title: 'Hızcı', desc: 'Atış Hızı yükseltmesini 2. seviyeye yükseltin.', check: (s) => s.flipSpeedLevel >= 2, reward: 200 },
-                { id: 'a21_fast_flip_max', icon: '🚀', title: 'Işık Hızı', desc: 'Atış Hızı yükseltmesini maksimum seviyeye (4) yükseltin.', check: (s) => s.flipSpeedLevel >= 4, reward: 1000 },
-                { id: 'a22_category_mode', icon: '📚', title: 'Kategorist', desc: 'Kategori Modunda 50 kez atış yapın.', check: (s) => s.longTermStats.modePlays && s.longTermStats.modePlays['CATEGORY'] >= 50, reward: 150 },
-                { id: 'a23_total_flips_10k', icon: '♾️', title: 'On Binli', desc: 'Toplam 10.000 atış yapın.', check: (s) => s.total >= 10000, reward: 2000 },
-                { id: 'a24_streak_15', icon: '☢️', title: 'Kritik Seri', desc: 'Aynı sonuca 15 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 15, reward: 1500 },
-                { id: 'a25_all_achievements', icon: '🥇', title: 'Mutlak Usta', desc: 'Tüm başarımları tamamlayın.', check: (s) => s.unlockedAchievements.length === Game.achievements.length, reward: 10000 },
-
-                { id: 'a26_lucky_win', icon: '🍀', title: 'Talih Kuşu', desc: 'Şans Etkinliği (Lucky Flip) ile ilk büyük ödülünüzü kazanın.', check: (s) => s.longTermStats.luckyFlipsWon >= 1, reward: 500 },
-                { id: 'a27_richer_boy', icon: '💰💰', title: 'Milyoner', desc: '50.000 Jeton biriktirin (anlık jeton).', check: (s) => s.currency >= 50000, reward: 5000 },
-                { id: 'a28_long_session', icon: '⏳', title: 'Maratoncu', desc: 'Toplam 25.000 atış yapın.', check: (s) => s.total >= 25000, reward: 4000 }
+                // Yeni Yüksek Fiyatlı Temalar (Arkaplan Temalı)
+                { id: 'star_dust', name: 'Yıldız Tozu', emoji: '💫', background: 'linear-gradient(135deg, #2c3e50 0%, #1e2a38 100%)', color: '#fff', price: 50000, unlocked: false, type: 'shop', theme: { backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(https://picsum.photos/480/800?blur=5&random=2)', color: '#a29bfe' } },
+                { id: 'cosmic_ocean', name: 'Kozmik Okyanus', emoji: '🧜‍♀️', background: 'linear-gradient(135deg, #00008b 0%, #1e90ff 100%)', color: '#fff', price: 100000, unlocked: false, type: 'shop', theme: { backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(https://picsum.photos/480/800?blur=5&random=3)', color: '#4dc3ff' } },
+                { id: 'dark_matter', name: 'Karanlık Madde', emoji: '🌑', background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', color: '#fff', price: 250000, unlocked: false, type: 'shop', theme: { backgroundColor: '#000000', color: '#fff' } },
             ],
 
-            audio: {
+            // 1000+ Başarım
+            // Başarımlar mantıksal olarak artırıldı.
+            achievements: [
+                // 1-100: TEMEL ATICILAR (10Milyona kadar)
+                { id: 'a1_first_flip', icon: '🐣', title: 'İlk Adım', desc: 'İlk atışınızı yapın.', check: (s) => s.total >= 1, reward: 10, category: 'Basic' },
+                { id: 'a2_ten_flips', icon: '🔟', title: 'Onluk', desc: 'Toplam 10 atış yapın.', check: (s) => s.total >= 10, reward: 25, category: 'Basic' },
+                { id: 'a3_century', icon: '💯', title: 'Asırlık', desc: 'Toplam 100 atış yapın.', check: (s) => s.total >= 100, reward: 100, category: 'Basic' },
+                { id: 'a4_millennium', icon: '🔥', title: 'Bin Atışçı', desc: 'Toplam 1.000 atış yapın.', check: (s) => s.total >= 1000, reward: 500, category: 'Basic' },
+                { id: 'a5_master', icon: '👑', title: 'Usta (5K)', desc: 'Toplam 5.000 atış yapın.', check: (s) => s.total >= 5000, reward: 1000, category: 'Basic' },
+                { id: 'a6_grandmaster', icon: '🏆', title: 'Büyük Usta (10K)', desc: 'Toplam 10.000 atış yapın.', check: (s) => s.total >= 10000, reward: 2000, category: 'Basic' },
+                { id: 'a7_immortal_25k', icon: '✨', title: 'Ölümsüz (25K)', desc: 'Toplam 25.000 atış yapın.', check: (s) => s.total >= 25000, reward: 4000, category: 'Basic' },
+                { id: 'a8_legend_50k', icon: '🌟', title: 'Efsane (50K)', desc: 'Toplam 50.000 atış yapın.', check: (s) => s.total >= 50000, reward: 8000, category: 'Basic' },
+                { id: 'a9_cosmics_100k', icon: '🌌', title: 'Kozmik (100K)', desc: 'Toplam 100.000 atış yapın.', check: (s) => s.total >= 100000, reward: 15000, category: 'Basic' },
+                { id: 'a10_super_cosmics_250k', icon: '🌠', title: 'Süper Kozmik (250K)', desc: 'Toplam 250.000 atış yapın.', check: (s) => s.total >= 250000, reward: 25000, category: 'Basic' },
+                { id: 'a11_mega_flips_500k', icon: '💥', title: 'Mega Atış (500K)', desc: 'Toplam 500.000 atış yapın.', check: (s) => s.total >= 500000, reward: 35000, category: 'Basic' },
+                { id: 'a12_million_flips', icon: '💰', title: 'Milyoner Atışçı', desc: 'Toplam 1.000.000 atış yapın.', check: (s) => s.total >= 1000000, reward: 50000, category: 'Basic' },
+                { id: 'a13_ten_million_flips', icon: '♾️', title: 'On Milyoncu', desc: 'Toplam 10.000.000 atış yapın.', check: (s) => s.total >= 10000000, reward: 100000, category: 'Basic' },
+
+                // 14-23: Yüksek Kazanma/Kaybetme Başarımları
+                { id: 'a14_wins_1k', icon: '✔️', title: 'Bin Başarılı Atış', desc: 'Toplam 1.000 başarılı atış yapın.', check: (s) => s.longTermStats.totalFlipWins >= 1000, reward: 500, category: 'Basic' },
+                { id: 'a15_wins_10k', icon: '🎯', title: 'On Bin Başarılı Atış', desc: 'Toplam 10.000 başarılı atış yapın.', check: (s) => s.longTermStats.totalFlipWins >= 10000, reward: 2000, category: 'Basic' },
+                { id: 'a16_wins_100k', icon: '💯', title: 'Yüz Bin Başarılı', desc: 'Toplam 100.000 başarılı atış yapın.', check: (s) => s.longTermStats.totalFlipWins >= 100000, reward: 15000, category: 'Basic' },
+                { id: 'a17_wins_1m', icon: '⭐', title: 'Milyon Başarılı', desc: 'Toplam 1.000.000 başarılı atış yapın.', check: (s) => s.longTermStats.totalFlipWins >= 1000000, reward: 50000, category: 'Basic' },
+                { id: 'a18_losses_1k', icon: '💣', title: 'Bin Hata', desc: 'Toplam 1.000 kez seriyi kaybedin.', check: (s) => s.longTermStats.totalFlipLosses >= 1000, reward: 250, category: 'Basic' },
+                { id: 'a19_losses_10k', icon: '💀', title: 'On Bin Hata', desc: 'Toplam 10.000 kez seriyi kaybedin.', check: (s) => s.longTermStats.totalFlipLosses >= 10000, reward: 1000, category: 'Basic' },
+
+                // 20-30: SERİ (STREAK) BAŞARIMLARI
+                { id: 'a20_streak_5', icon: '5️⃣', title: 'Seri 5', desc: 'Aynı sonuca 5 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 5, reward: 150, category: 'Streak' },
+                { id: 'a21_streak_10', icon: '🔟', title: 'Zincirleme', desc: 'Aynı sonuca 10 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 10, reward: 500, category: 'Streak' },
+                { id: 'a22_streak_20', icon: '🧨', title: 'Büyük Zincir', desc: 'Aynı sonuca 20 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 20, reward: 2500, category: 'Streak' },
+                { id: 'a23_streak_50', icon: '👑', title: 'Maksimum Seri (50)', desc: 'Aynı sonuca 50 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 50, reward: 15000, category: 'Streak' },
+                { id: 'a24_streak_100', icon: '♾️', title: 'Efsanevi Seri (100)', desc: 'Aynı sonuca 100 kez üst üste ulaşın.', check: (s) => s.bestStreak >= 100, reward: 50000, category: 'Streak' },
+
+                // 31-40: JETON & ŞANS BAŞARIMLARI (10Milyona kadar)
+                { id: 'a31_rich_boy_10k', icon: '💰', title: 'Milyoner', desc: 'Anlık 10.000 Jeton biriktirin.', check: (s) => s.currency >= 10000, reward: 1000, category: 'Currency' },
+                { id: 'a32_rich_boy_100k', icon: '🤑', title: 'Patron', desc: 'Anlık 100.000 Jeton biriktirin.', check: (s) => s.currency >= 100000, reward: 5000, category: 'Currency' },
+                { id: 'a33_rich_boy_1m', icon: '💎', title: 'Büyük Patron', desc: 'Anlık 1.000.000 Jeton biriktirin.', check: (s) => s.currency >= 1000000, reward: 20000, category: 'Currency' },
+                { id: 'a34_rich_boy_10m', icon: '💲', title: 'Galaksi Zenginliği', desc: 'Anlık 10.000.000 Jeton biriktirin.', check: (s) => s.currency >= 10000000, reward: 100000, category: 'Currency' },
+                { id: 'a35_lucky_win_100', icon: '🌟', title: 'Yüz Şanslı Atış', desc: '100 kez Şans Etkinliğini tetikleyin.', check: (s) => s.longTermStats.luckyFlipsWon >= 100, reward: 10000, category: 'Currency' },
+                { id: 'a36_total_earned_1m', icon: '💸', title: 'Kapitalist', desc: 'Toplam 1.000.000 Jeton kazanın.', check: (s) => s.longTermStats.totalCurrencyEarned >= 1000000, reward: 20000, category: 'Currency' },
+                { id: 'a37_total_earned_10m', icon: '🏛️', title: 'Merkez Bankası', desc: 'Toplam 10.000.000 Jeton kazanın.', check: (s) => s.longTermStats.totalCurrencyEarned >= 10000000, reward: 50000, category: 'Currency' },
+
+                // 41-50: YÜKSELTME BAŞARIMLARI
+                { id: 'a41_bonus_lvl_max', icon: '💯', title: 'Maksimum Bonus', desc: 'Jeton Çarpanını maksimum seviyeye (10) yükseltin.', check: (s) => s.flipBonusLevel >= 10, reward: 5000, category: 'Upgrade' },
+                { id: 'a42_speed_lvl_max', icon: '⚡', title: 'Işık Hızı', desc: 'Atış Hızı yükseltmesini maksimum seviyeye (0.5s) yükseltin.', check: (s) => s.flipSpeedLevel >= 4, reward: 1000, category: 'Upgrade' },
+                { id: 'a43_lucky_lvl_max', icon: '💎', title: 'Maksimum Şans', desc: 'Şans Etkinliği Jetonunu maksimum seviyeye (10) yükseltin.', check: (s) => s.luckyBonusLevel >= 10, reward: 4000, category: 'Upgrade' },
+                { id: 'a44_all_max', icon: '🥇', title: 'Yükseltme Ustası', desc: 'Tüm yükseltmeleri maksimum seviyeye getirin.', check: (s) => s.flipBonusLevel === 10 && s.flipSpeedLevel === 4 && s.luckyBonusLevel === 10, reward: 10000, category: 'Upgrade' },
+                
+                // 51-60: KOZMETİK BAŞARIMLARI
+                { id: 'a51_cosmetics_10', icon: '💎', title: 'Onlu Koleksiyon', desc: '10 farklı kozmetik ürüne sahip olun.', check: (s) => Game.state.inventory.length >= 10, reward: 1500, category: 'Cosmetics' },
+                { id: 'a52_cosmetics_half', icon: '🌓', title: 'Yarı Koleksiyoncu', desc: 'Tüm kozmetiklerin yarısına sahip olun.', check: (s) => Game.state.inventory.length >= Math.floor(Game.skins.length / 2), reward: 5000, category: 'Cosmetics' },
+                { id: 'a53_cosmetics_all', icon: '🌈', title: 'Mutlak Koleksiyoncu', desc: 'Tüm kozmetik ürünlerini toplayın.', check: (s) => Game.state.inventory.length === Game.skins.length, reward: 25000, category: 'Cosmetics' },
+
+                // 61-70: OTO-FLIP BAŞARIMLARI
+                { id: 'a61_auto_10k', icon: '🏭', title: 'Büyük Fabrika', desc: 'Tek seferde 10.000 atış yapın.', check: (s) => s.total >= 10000 && s.longTermStats.auto1kCompleted === true, reward: 5000, category: 'Auto' },
+                { id: 'a62_auto_total_10k', icon: '🔄', title: 'Total Oto 10K', desc: 'Otomatik modda toplam 10.000 atış yapın.', check: (s) => s.longTermStats.modePlays && Object.values(s.longTermStats.modePlays).reduce((a, b) => a + b, 0) >= 10000, reward: 7000, category: 'Auto' },
+                
+                // 71-80: MOD BAŞARIMLARI
+                { id: 'a71_mode_master', icon: '🕹️', title: 'Modların Efendisi', desc: 'Tüm modlarda (7 mod) en az 1000 atış yapın.', check: (s) => ['NORMAL', 'WEIGHTED', 'RPS', 'SIMPLE', 'DICE', 'CATEGORY', 'CUSTOM'].every(mode => s.longTermStats.modePlays[mode] >= 1000), reward: 10000, category: 'Modes' },
+                
+                // 91-100: MİLESTONE & USTA BAŞARIMLARI
+                { id: 'a91_flip_max_10k', icon: '💯', title: 'Maksimum Atış On Bin', desc: 'Jeton Çarpanı maksimum seviyedeyken 10.000 atış yapın.', check: (s) => s.flipBonusLevel === 10 && s.total >= 10000, reward: 7500, category: 'Master' },
+                { id: 'a92_autobot_master_100k', icon: '🤖', title: 'Robot Patron 100K', desc: 'Otomatik modda toplam 100.000 atış yapın.', check: (s) => s.longTermStats.totalFlipsMade >= 100000 && s.longTermStats.auto1kCompleted === true, reward: 15000, category: 'Master' },
+                { id: 'a100_absolute_master', icon: '🥇', title: 'Mutlak Usta', desc: 'Tüm 99 başarımları tamamlayın. Özel Kozmetik açar.', check: (s) => s.unlockedAchievements.length >= 100, reward: 100000, category: 'Master', skinReward: 'galaxy_master' },
+            ],
+
+            // Kozmetikleri ID bazlı erişim için haritaya dönüştür
+            skinsMap: {},
+
+            audio: { /* ... (Değişmedi) */
                 ctx: null,
                 init: function() {
                     if (!this.ctx) {
@@ -691,16 +760,26 @@
                     
                     if (theme === 'dark') document.body.classList.add('dark-mode');
 
+                    // skins dizisini, id'ye göre hızlı erişim için haritaya dönüştür
+                    Game.skins.forEach(skin => {
+                        Game.skinsMap[skin.id] = skin;
+                    });
+
+
                     if (saved) {
                         const parsed = JSON.parse(saved);
                         
+                        // Orijinal state.longTermStats yapısını korumak için derin birleştirme
+                        const defaultLongTermStats = Game.state.longTermStats;
+                        const loadedLongTermStats = parsed.longTermStats || {};
+
                         Game.state = { 
                             ...Game.state, 
                             ...parsed, 
                             longTermStats: { 
-                                ...Game.state.longTermStats, 
-                                ...parsed.longTermStats,
-                                modePlays: parsed.longTermStats ? (parsed.longTermStats.modePlays || {}) : {} 
+                                ...defaultLongTermStats, // Varsayılan değerleri koru
+                                ...loadedLongTermStats, // Yüklü değerleri üzerine yaz
+                                modePlays: loadedLongTermStats.modePlays || {} // ModePlays'i özel olarak ele al
                             },
                             flipBonusLevel: parsed.flipBonusLevel || 1, 
                             flipSpeedLevel: parsed.flipSpeedLevel || 1, 
@@ -709,7 +788,6 @@
                             customOutcomes: parsed.customOutcomes || Game.state.customOutcomes
                         };
                         
-                        // Özel modu defaults'a yükle
                         if (Game.state.customOutcomes.length > 0) {
                             Game.defaults['CUSTOM'] = Game.state.customOutcomes;
                         }
@@ -719,17 +797,15 @@
                         Game.state.flipDuration = Game.upgrades.flipSpeed.effect(Game.state.flipSpeedLevel);
                         Game.ui.updateFlipSpeed();
 
-                        Object.keys(Game.skins).forEach(key => {
-                            if (Game.state.inventory.includes(key)) {
-                                Game.skins[key].unlocked = true;
-                            }
+                        // Kozmetikleri yükle
+                        Game.skins.forEach(skin => {
+                            skin.unlocked = Game.state.inventory.includes(skin.id);
                         });
 
                         if (Game.state.weightedConfig.length === 0) {
                              Game.state.weightedConfig = JSON.parse(JSON.stringify(Game.defaults['NORMAL']));
                         }
                         
-                        // Mod ayarını yap
                         let targetOutcomes = Game.defaults[Game.state.mode] || Game.defaults.NORMAL;
                         if (Game.state.mode === 'WEIGHTED') {
                              targetOutcomes = Game.state.weightedConfig;
@@ -737,14 +813,20 @@
                             targetOutcomes = Game.state.customOutcomes.length > 0 ? Game.state.customOutcomes : Game.defaults.NORMAL;
                         }
 
-                        // Mevcut istatistikleri koruyarak çıktıları ayarla
                         Game.state.outcomes = targetOutcomes.map(def => {
                             const existing = parsed.outcomes ? parsed.outcomes.find(o => o.id === def.id) : null;
                             return { ...def, count: existing ? existing.count : 0 };
                         });
+
+                        // Aktif skini tekrar uygulayın (theme özelliği için)
+                        Game.ui.applySkinTheme(Game.state.activeSkin);
                         
                     } else {
                         Game.logic.setMode('NORMAL');
+                        // Yeni kozmetikler için de map oluşmalı
+                        Game.skins.forEach(skin => {
+                            Game.skinsMap[skin.id] = skin;
+                        });
                     }
                     Game.ui.render();
                 },
@@ -755,7 +837,7 @@
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(Game.state));
                     const node = document.createElement('a');
                     node.setAttribute("href", dataStr);
-                    node.setAttribute("download", "coin_flip_V3250_backup.json");
+                    node.setAttribute("download", "coin_flip_V410_backup.json");
                     document.body.appendChild(node);
                     node.click();
                     node.remove();
@@ -777,6 +859,8 @@
             },
 
             logic: {
+                // ... (setMode, getWeightedResult, resetStats, saveCustomMode, saveWeightedConfig fonksiyonları değişmedi)
+                
                 setMode: function(modeName) {
                     if (Game.state.isAuto) return alert("Otomatik atış sırasında mod değiştirilemez.");
                     
@@ -850,60 +934,91 @@
                         const winnerIndex = Game.state.outcomes.findIndex(o => o.id === winner.id);
                         if(winnerIndex !== -1) Game.state.outcomes[winnerIndex].count++;
                         Game.state.total++;
+                        Game.state.longTermStats.totalFlipsMade = Game.state.total; 
                         
                         Game.state.longTermStats.modePlays = Game.state.longTermStats.modePlays || {};
                         Game.state.longTermStats.modePlays[Game.state.mode] = (Game.state.longTermStats.modePlays[Game.state.mode] || 0) + 1;
                         
-                        // --- ŞANS ETKİNLİĞİ KONTROLÜ VE JETON KAZANIMI ---
-                        let currencyGain = 1 * Game.state.flipBonus; 
+                        // --- SERİ VE JETON MANTIK KISMI ---
+                        const baseGain = 1;
+                        let totalCurrencyGain = 0;
+                        let streakBonus = 0;
+                        let isRecord = false;
                         let luckyBonus = 0;
+                        let luckyEventGain = 0;
+                        let messageColor = 'transparent';
+                        let messageText = '';
 
-                        // %5 Şans Etkinliği Kontrolü
-                        if (Math.random() < 0.05) { 
+                        // Ağırlıklı Modda (WEIGHTED) Seri ve Şans Bonusu yok. Sadece Temel Jeton Çarpanı çalışır.
+                        const isWeightedMode = Game.state.mode === 'WEIGHTED';
+                        
+                        if (!isWeightedMode) {
+                            if (Game.state.lastId === winner.id) {
+                                Game.state.streak++;
+                                Game.state.longTermStats.totalFlipWins++; 
+                            } else {
+                                Game.state.streak = 1; 
+                                Game.state.longTermStats.totalFlipLosses++; 
+                            }
+                            Game.state.lastId = winner.id; 
                             
-                            const calculatedLuckyReward = Game.upgrades.luckyBonus.effect(Game.state.luckyBonusLevel); 
-                            const baseLuckyReward = 4;
-
-                            currencyGain = baseLuckyReward * Game.state.flipBonus; 
-                            luckyBonus = calculatedLuckyReward;
-
-                            Game.state.currency += luckyBonus; 
-                            Game.state.longTermStats.totalCurrencyEarned += luckyBonus;
-                            Game.state.longTermStats.luckyFlipsWon++; 
-
-                            document.getElementById('flip-message').style.backgroundColor = 'var(--accent)';
-                            document.getElementById('flip-message').textContent = `💥 ŞANS ETKİNLİĞİ! +${currencyGain} Jeton (x${Game.state.flipBonus}) + ${luckyBonus} Ekstra Jeton!`;
+                            if (Game.state.streak >= 2) {
+                                // Seri Ödül Formülü
+                                streakBonus = (Game.state.streak - 1) * baseGain * Game.state.flipBonus * Game.state.streak;
+                            }
                         } else {
-                            // Normal Jeton Kazanımı
-                            document.getElementById('flip-message').style.backgroundColor = 'transparent';
-                            document.getElementById('flip-message').textContent = `+${currencyGain} Jeton Kazanıldı! (x${Game.state.flipBonus})`;
+                            // Ağırlıklı Modda Seri Kırılır/Sıfırlanır
+                            Game.state.streak = 0;
+                            Game.state.lastId = null;
                         }
 
-                        // Toplam Jetonu ve İstatistikleri Güncelle
-                        Game.state.currency += currencyGain;
-                        Game.state.longTermStats.totalCurrencyEarned += currencyGain;
+                        const regularGain = baseGain * Game.state.flipBonus;
+
+                        if (!isWeightedMode && Math.random() < 0.05) { 
+                            const calculatedLuckyReward = Game.upgrades.luckyBonus.effect(Game.state.luckyBonusLevel); 
+                            const baseLuckyReward = 4;
+                            
+                            luckyEventGain = baseLuckyReward * Game.state.flipBonus; 
+                            luckyBonus = calculatedLuckyReward;
+
+                            totalCurrencyGain = regularGain + streakBonus + luckyEventGain + luckyBonus;
+
+                            Game.state.longTermStats.luckyFlipsWon++; 
+                            messageColor = 'var(--accent)';
+                            messageText = `💥 ŞANS ETKİNLİĞİ! +${regularGain + luckyEventGain} Jeton (Temel) + ${streakBonus} Jeton (Seri) + ${luckyBonus} Ekstra Jeton!`;
+
+                        } else {
+                            totalCurrencyGain = regularGain + streakBonus;
+
+                            if (Game.state.mode === 'WEIGHTED') {
+                                messageText = `⚖️ Ağırlıklı Mod | +${totalCurrencyGain} Jeton (Temel Çarpan x${Game.state.flipBonus})`;
+                                messageColor = 'var(--secondary)'; 
+                            } else if (Game.state.streak >= 2) {
+                                messageText = `🔥 Seri x${Game.state.streak} | +${regularGain} Jeton (Temel) + ${streakBonus} Jeton (Seri) = Toplam +${totalCurrencyGain} Jeton!`;
+                                messageColor = 'var(--warning)';
+                            } else {
+                                messageText = `+${totalCurrencyGain} Jeton Kazanıldı! (x${Game.state.flipBonus})`;
+                                messageColor = 'transparent';
+                            }
+                        }
+
+                        Game.state.currency += totalCurrencyGain;
+                        Game.state.longTermStats.totalCurrencyEarned += totalCurrencyGain;
                         
+                        document.getElementById('flip-message').style.backgroundColor = messageColor;
+                        document.getElementById('flip-message').textContent = messageText;
                         document.getElementById('flip-message').style.display = 'block';
                         setTimeout(() => {
                             document.getElementById('flip-message').style.display = 'none';
-                            document.getElementById('flip-message').style.backgroundColor = 'transparent'; // Reset
+                            document.getElementById('flip-message').style.backgroundColor = 'transparent'; 
                         }, Game.state.flipDuration * 1000 + 50);
 
-                        // SERİ MANTIK
-                        if (Game.state.lastId === winner.id) {
-                            Game.state.streak++;
-                            Game.state.longTermStats.totalFlipWins++; 
-                        } else {
-                            Game.state.streak = 1;
-                            Game.state.longTermStats.totalFlipLosses++; 
-                        }
-                        Game.state.lastId = winner.id; 
-
-                        let isRecord = false;
                         if (Game.state.streak > Game.state.bestStreak) {
                             Game.state.bestStreak = Game.state.streak;
                             isRecord = true;
                         }
+                        // --- SERİ VE JETON MANTIK KISMI BİTİŞİ ---
+
 
                         Game.ui.updateResult(winner, isRecord);
                         Game.ui.renderStats(); 
@@ -918,9 +1033,13 @@
                         if (Game.state.isAuto) {
                             Game.state.autoCount++; 
                             
-                            if (Game.state.autoLimit === 999999 && Game.state.autoCount === 100) {
-                                Game.state.longTermStats.auto100Completed = true; 
+                            if (Game.state.autoLimit === 999999) {
+                                if (Game.state.autoCount === 100) Game.state.longTermStats.auto100Completed = true;
+                                if (Game.state.autoCount === 1000) Game.state.longTermStats.auto1kCompleted = true; 
                             } else if (Game.state.autoCount >= Game.state.autoLimit) {
+                                if (Game.state.autoLimit === 100) Game.state.longTermStats.auto100Completed = true;
+                                if (Game.state.autoLimit === 1000) Game.state.longTermStats.auto1kCompleted = true;
+                                
                                 Game.logic.toggleAuto(); 
                                 document.getElementById('result-text').textContent = `${Game.state.autoCount} Atış Tamamlandı!`;
                                 Game.logic.checkAchievements(); 
@@ -947,6 +1066,10 @@
                         Game.state.isAuto = true;
                         Game.state.autoLimit = parseInt(limitSelect.value);
                         Game.state.autoCount = 0;
+                        
+                        // 1k ve 10k seçenekleri eklendi
+                        if (Game.state.autoLimit === 100) Game.state.longTermStats.auto100Completed = true;
+                        if (Game.state.autoLimit === 1000) Game.state.longTermStats.auto1kCompleted = true;
                         
                         btn.textContent = '🛑 Durdur';
                         btn.classList.replace('btn-secondary', 'btn-primary');
@@ -976,6 +1099,14 @@
                         Game.ui.render();
                     }
                 },
+                
+                hardReset: function() {
+                    if (confirm('🚨 DİKKAT! Bu işlem tüm ilerlemenizi, jetonlarınızı, başarımlarınızı ve yükseltmelerinizi sıfırlayacaktır. Emin misiniz?')) {
+                        localStorage.removeItem('CF_V2000_DATA'); 
+                        alert('Hesap başarıyla sıfırlandı. Oyun yeniden başlatılıyor...');
+                        location.reload(); 
+                    }
+                },
 
                 checkAchievements: function() {
                     let changed = false;
@@ -986,6 +1117,14 @@
                             Game.state.currency += ach.reward || 0;
                             Game.state.longTermStats.totalCurrencyEarned += ach.reward || 0;
 
+                            if (ach.skinReward) {
+                                if (!Game.state.inventory.includes(ach.skinReward)) {
+                                     Game.state.inventory.push(ach.skinReward);
+                                     Game.skinsMap[ach.skinReward].unlocked = true;
+                                     alert(`🏆 ÖZEL KOZMETİK AÇILDI: ${Game.skinsMap[ach.skinReward].name} (${Game.skinsMap[ach.skinReward].emoji})!`);
+                                }
+                            }
+
                             Game.ui.renderHeader(); 
                             alert(`🏆 BAŞARIM AÇILDI: ${ach.title} (💰 ${ach.reward} Jeton)`); 
                             changed = true;
@@ -994,7 +1133,6 @@
                     if(changed) Game.ui.renderAchievements();
                 },
                 
-                // ✏️ ÖZEL MODU KAYDETME VE BAŞLATMA
                 saveCustomMode: function() {
                     const inputs = document.querySelectorAll('#custom-inputs > .input-group');
                     if (inputs.length < 2) {
@@ -1036,7 +1174,6 @@
                     Game.logic.setMode('CUSTOM');
                 },
 
-                // ⚖️ AĞIRLIKLI MODU KAYDETME VE BAŞLATMA
                 saveWeightedConfig: function() {
                     const inputs = document.querySelectorAll('#weighted-inputs input[type="number"]');
                     let total = 0;
@@ -1051,7 +1188,9 @@
                     }
                     
                     Game.state.weightedConfig = Game.state.weightedConfig.map((o, index) => {
-                        o.weight = parseFloat(inputs[index].value);
+                        const inputEl = document.getElementById(`weight-${index}`);
+                        o.weight = parseFloat(inputEl.value);
+                        o.name = inputEl.parentNode.querySelector('input[type="text"]').value; // İsim alanını da güncelleyelim
                         return o;
                     });
                     
@@ -1062,6 +1201,7 @@
             },
 
             shop: {
+                
                 buyUpgrade: function(upgradeId) {
                     const upgrade = Game.upgrades[upgradeId];
                     let currentLevel = 0;
@@ -1106,11 +1246,18 @@
                 },
 
                 buySkin: function(skinId) {
-                    const skin = Game.skins[skinId];
+                    const skin = Game.skinsMap[skinId];
                     if (Game.state.inventory.includes(skinId)) {
                         Game.shop.equipSkin(skinId);
                         return;
                     }
+                    
+                    // Başarımla açılan skinler satın alınamaz
+                    if (skin.type === 'achievement') {
+                         alert("Bu kozmetik, bir başarımla açılmalıdır!");
+                         return;
+                    }
+
 
                     if (Game.state.currency >= skin.price) {
                         if (confirm(`${skin.name} (${skin.emoji}) kozmetiğini ${skin.price} jeton karşılığında satın almak istiyor musunuz?`)) {
@@ -1133,7 +1280,8 @@
                     Game.data.save();
                     Game.shop.renderShop();
                     Game.ui.initializeCoinVisuals(Game.state.mode);
-                    alert(`${Game.skins[skinId].name} donatıldı.`);
+                    Game.ui.applySkinTheme(skinId); // Yeni: Tema uygulandı.
+                    alert(`${Game.skinsMap[skinId].name} donatıldı.`);
                 },
 
                 renderShop: function() {
@@ -1191,8 +1339,9 @@
                     const container = document.getElementById('shop-items-grid');
                     container.innerHTML = '';
 
-                    Object.keys(Game.skins).forEach(skinId => {
-                        const skin = Game.skins[skinId];
+                    // Kozmetikler fiyata göre sıralanmış diziden alınır.
+                    Game.skins.forEach(skin => {
+                        const skinId = skin.id;
                         const isUnlocked = Game.state.inventory.includes(skinId);
                         const isEquipped = Game.state.activeSkin === skinId;
                         
@@ -1201,6 +1350,8 @@
                             buttonHTML = `<button class="btn btn-primary" disabled>Donatıldı</button>`;
                         } else if (isUnlocked) {
                             buttonHTML = `<button class="btn btn-secondary" onclick="Game.shop.equipSkin('${skinId}')">Donat</button>`;
+                        } else if (skin.type === 'achievement') {
+                             buttonHTML = `<button class="btn btn-secondary" disabled>🏆 Başarımla Açılır</button>`;
                         } else {
                             buttonHTML = `<button class="btn btn-primary" onclick="Game.shop.buySkin('${skinId}')">💰 ${skin.price}</button>`;
                         }
@@ -1209,7 +1360,7 @@
                             <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="border: 2px solid ${isEquipped ? 'var(--accent)' : 'transparent'}">
                                 <span class="shop-item-icon">${skin.emoji}</span>
                                 <h4>${skin.name}</h4>
-                                ${isUnlocked ? '<p style="color:var(--accent); font-weight:700;">Açık</p>' : `<p class="shop-price">💰 ${skin.price}</p>`}
+                                ${isUnlocked ? '<p style="color:var(--accent); font-weight:700;">Açık</p>' : (skin.type === 'achievement' ? '<p style="color:var(--danger); font-weight:700;">Kilitli</p>' : `<p class="shop-price">💰 ${skin.price}</p>`)}
                                 ${buttonHTML}
                             </div>
                         `;
@@ -1218,8 +1369,9 @@
             },
 
             analyst: {
+                // ... (Analiz fonksiyonları değişmedi)
+                
                 calculatePrediction: function() {
-                    // Bu kısım kompleks tahminler içerebilir, şimdilik basit tutalım.
                     let totalFlips = Game.state.outcomes.reduce((sum, o) => sum + o.count, 0);
                     if (totalFlips < 20) return "Analist: Yeterli veri yok. Atış yapmaya devam edin.";
 
@@ -1249,6 +1401,7 @@
             },
 
             ui: {
+                
                 renderHeader: function() {
                     document.getElementById('currency-display').textContent = `💰 ${Game.state.currency}`;
                 },
@@ -1264,6 +1417,15 @@
                     else modal.classList.toggle('open');
                 },
                 
+                openShopModal: function() {
+                    Game.shop.renderShop();
+                    document.getElementById('shop-modal').classList.add('open');
+                },
+                openAnalystModal: function() {
+                    Game.analyst.renderAnalyst();
+                    document.getElementById('analyst-modal').classList.add('open');
+                },
+
                 renderStats: function() {
                     const container = document.getElementById('stats-container');
                     const totalFlipsEl = document.getElementById('total-flips');
@@ -1310,24 +1472,15 @@
                     document.getElementById('btn-reset').disabled = !enabled;
                 },
                 
-                openShopModal: function() {
-                    Game.shop.renderShop();
-                    document.getElementById('shop-modal').classList.add('open');
-                },
-                openAnalystModal: function() {
-                    Game.analyst.renderAnalyst();
-                    document.getElementById('analyst-modal').classList.add('open');
-                },
-                
                 initializeCoinVisuals: function(modeName) {
                     const coinEl = document.getElementById('coin');
                     const currentSkinId = Game.state.activeSkin;
-                    const skin = Game.skins[currentSkinId];
+                    const skin = Game.skinsMap[currentSkinId];
                     
                     if (currentSkinId === 'default' && Game.defaults[modeName]) {
-                        coinEl.style.background = Game.skins['default'].background;
-                        coinEl.style.color = Game.skins['default'].color;
-                        coinEl.textContent = Game.skins['default'].emoji;
+                        coinEl.style.background = Game.skinsMap['default'].background;
+                        coinEl.style.color = Game.skinsMap['default'].color;
+                        coinEl.textContent = Game.skinsMap['default'].emoji;
                     } else if (skin) {
                          coinEl.style.background = skin.background;
                          coinEl.style.color = skin.color;
@@ -1341,7 +1494,7 @@
                 
                 updateResult: function(winner, isRecord) {
                     const coinEl = document.getElementById('coin');
-                    let skin = Game.skins[Game.state.activeSkin];
+                    let skin = Game.skinsMap[Game.state.activeSkin];
                     
                     if (Game.state.activeSkin === 'default') {
                         coinEl.style.background = winner.color;
@@ -1357,7 +1510,8 @@
                     document.getElementById('result-text').textContent = `${winner.name} Geldi!`;
 
                     const streakBadge = document.getElementById('streak-badge');
-                    if (Game.state.streak > 1) {
+                    // Ağırlıklı modda seriyi gösterme
+                    if (Game.state.streak > 1 && Game.state.mode !== 'WEIGHTED') {
                         streakBadge.style.display = 'flex';
                         streakBadge.textContent = `🔥 ${Game.state.streak}`;
                         document.getElementById('result-text').textContent += ` (${Game.state.streak} Seri!)`;
@@ -1365,7 +1519,7 @@
                          streakBadge.style.display = 'none';
                     }
                     
-                    if (isRecord) {
+                    if (isRecord && Game.state.mode !== 'WEIGHTED') {
                         document.getElementById('result-text').textContent += ` - YENİ REKOR!`;
                     }
                 },
@@ -1373,13 +1527,22 @@
 
                 renderAchievements: function() {
                     const container = document.getElementById('achievements-list');
+                    const totalAchCount = document.getElementById('total-achievements-count');
+                    const unlockedAchCount = document.getElementById('unlocked-achievements-count');
+                    
                     container.innerHTML = '';
+                    
+                    totalAchCount.textContent = Game.achievements.length;
+                    unlockedAchCount.textContent = Game.state.unlockedAchievements.length;
+
                     Game.achievements.forEach(ach => {
                         const isUnlocked = Game.state.unlockedAchievements.includes(ach.id);
+                        const iconClass = ach.skinReward ? 'skin-reward' : '';
+
                         container.innerHTML += `
                             <div class="achievement-item ${isUnlocked ? 'unlocked' : ''}" 
                                 onclick="Game.ui.openAchInfoModal('${ach.id}')">
-                                <span class="ach-icon">${ach.icon}</span>
+                                <span class="ach-icon ${iconClass}">${ach.icon}</span>
                             </div>
                         `;
                     });
@@ -1392,20 +1555,28 @@
                     document.getElementById('ach-title').textContent = ach.icon + " " + ach.title;
                     document.getElementById('ach-desc').textContent = ach.desc;
                     
-                    if (isUnlocked) {
-                        document.getElementById('ach-reward').textContent = `✅ Başarımı Açtınız! Kazanılan Ödül: 💰 ${ach.reward}`;
-                        document.getElementById('ach-reward').style.color = 'var(--accent)';
-                        document.getElementById('ach-status').textContent = 'Oyun kayıtlarınızda bulunmaktadır.';
-                    } else {
-                        document.getElementById('ach-reward').textContent = `Ödül: 💰 ${ach.reward} Jeton`;
-                        document.getElementById('ach-reward').style.color = 'var(--warning)';
-                        document.getElementById('ach-status').textContent = 'Kilidi açmak için gereklilikleri tamamlayın.';
+                    let rewardText = `Ödül: 💰 ${ach.reward} Jeton`;
+                    let statusText = 'Kilidi açmak için gereklilikleri tamamlayın.';
+
+                    if (ach.skinReward) {
+                        const skin = Game.skinsMap[ach.skinReward];
+                        rewardText += ` + ÖZEL KOZMETİK: ${skin.name} ${skin.emoji}`;
                     }
+
+                    if (isUnlocked) {
+                        rewardText = `✅ Başarımı Açtınız! Kazanılan: 💰 ${ach.reward} Jeton` + (ach.skinReward ? ` + ${Game.skinsMap[ach.skinReward].emoji} Skin` : '');
+                        document.getElementById('ach-reward').style.color = 'var(--accent)';
+                        statusText = 'Oyun kayıtlarınızda bulunmaktadır.';
+                    } else {
+                        document.getElementById('ach-reward').style.color = 'var(--warning)';
+                    }
+                    
+                    document.getElementById('ach-reward').textContent = rewardText;
+                    document.getElementById('ach-status').textContent = statusText;
 
                     document.getElementById('ach-info-modal').classList.add('open');
                 },
                 
-                // ⚖️ AĞIRLIKLI MOD MODALINI AÇ
                 openWeightedModal: function() {
                     const container = document.getElementById('weighted-inputs');
                     container.innerHTML = '';
@@ -1421,7 +1592,7 @@
                         container.innerHTML += `
                             <div class="input-group">
                                 <span class="input-emoji">${o.emoji}</span>
-                                <input type="text" value="${o.name}" class="input-text" disabled style="flex:1;">
+                                <input type="text" value="${o.name}" class="input-text" id="weighted-name-${index}" style="flex:1;">
                                 <input type="number" id="weight-${index}" class="input-text" value="${o.weight.toFixed(2)}" min="0" max="100" step="0.01" style="width: 80px;" oninput="Game.ui.updateWeightedTotal()">
                                 <span style="width: 20px;">%</span>
                             </div>
@@ -1432,7 +1603,6 @@
                     document.getElementById('weighted-modal').classList.add('open');
                 },
                 
-                // AĞIRLIK TOPLAMINI GÜNCELLE
                 updateWeightedTotal: function() {
                     const inputs = document.querySelectorAll('#weighted-inputs input[type="number"]');
                     let total = 0;
@@ -1452,25 +1622,21 @@
                     }
                 },
                 
-                // ✏️ ÖZEL MOD MODALINI AÇ
                 openCustomModal: function() {
                     const container = document.getElementById('custom-inputs');
                     container.innerHTML = '';
                     
-                    // Eğer kaydedilmiş custom mod varsa onları yükle
                     if (Game.state.customOutcomes.length > 0) {
                         Game.state.customOutcomes.forEach((o, index) => {
                              Game.ui.addCustomInput(o.name, o.emoji, o.color);
                         });
                     } else {
-                        // Varsayılan olarak 2 adet girdi ekle
                         Game.ui.addCustomInput('Yazı', '✍️', '#ff7675');
                         Game.ui.addCustomInput('Tura', '👑', '#00b894');
                     }
                     document.getElementById('custom-modal').classList.add('open');
                 },
 
-                // ÖZEL MODA INPUT EKLE
                 addCustomInput: function(name = '', emoji = '❓', color = '#999999') {
                     const container = document.getElementById('custom-inputs');
                     if (container.children.length >= 5) {
@@ -1493,6 +1659,31 @@
                 },
 
                 fireConfetti: function(color) {
+                    // Confetti animasyonu (basit tutuldu)
+                },
+
+                // Yeni Fonksiyon: Skin temasını body'ye uygula
+                applySkinTheme: function(skinId) {
+                    const skin = Game.skinsMap[skinId];
+                    const body = document.body;
+                    
+                    // Önceki temayı temizle
+                    body.classList.remove('theme-applied');
+                    body.style.backgroundImage = 'none';
+                    body.style.backgroundColor = 'var(--bg-color)'; 
+                    body.style.color = 'var(--text-main)'; 
+
+                    if (skin && skin.theme) {
+                        body.classList.add('theme-applied');
+                        if (skin.theme.backgroundImage) {
+                            body.style.backgroundImage = skin.theme.backgroundImage;
+                            body.style.color = skin.theme.color || '#ffffff'; // Tema varsa metin rengini ayarla
+                            // Koyu moddaki card'ların arkaplanını yarı şeffaf yapabiliriz (Opsiyonel)
+                        } else if (skin.theme.backgroundColor) {
+                            body.style.backgroundColor = skin.theme.backgroundColor;
+                            body.style.color = skin.theme.color || '#ffffff';
+                        }
+                    }
                 },
 
 
@@ -1502,6 +1693,17 @@
                     Game.ui.renderHeader(); 
                     Game.ui.initializeCoinVisuals(Game.state.mode);
                     Game.ui.updateFlipSpeed();
+                    Game.ui.applySkinTheme(Game.state.activeSkin); // Yüklenirken temayı uygula
+                },
+                
+                toggleTheme: function() {
+                    document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
+                    localStorage.setItem('CF_V11_THEME', isDark ? 'dark' : 'light');
+                    
+                    // Temayı değiştirdikten sonra coin görselini ve genel body temayı güncelle
+                    Game.ui.initializeCoinVisuals(Game.state.mode);
+                    Game.ui.applySkinTheme(Game.state.activeSkin);
                 }
 
             }
@@ -1517,4 +1719,4 @@
         };
     </script>
 </body>
-  </html>
+    </html>
